@@ -14,16 +14,10 @@ if ($userId === 0) {
 $pageTitle = 'User Access Log';
 $conn = getDBConnection();
 
-// Helper to format DB timestamps to IST (+5:30)
+// Helper to format DB timestamps (which are already in IST from SET time_zone = '+05:30')
 function formatToIST(?string $dbTime, string $format = 'd-m-Y H:i:s'): string {
     if (empty($dbTime)) return 'N/A';
-    try {
-        $dt = new DateTime($dbTime, new DateTimeZone('UTC'));
-        $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
-        return $dt->format($format);
-    } catch (Exception $e) {
-        return $dbTime;
-    }
+    return date($format, strtotime($dbTime));
 }
 
 // Get username

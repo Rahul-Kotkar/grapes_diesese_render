@@ -8,22 +8,16 @@ require_once '../api/config.php';
 $pageTitle = 'Dashboard';
 $conn = getDBConnection();
 
-// Helper to format DB timestamps to IST (+5:30)
+// Helper to format DB timestamps (which are already in IST from SET time_zone = '+05:30')
 function formatToIST(?string $dbTime, string $format = 'H:i:s, d M'): string {
     if (empty($dbTime)) return 'Never';
-    try {
-        $dt = new DateTime($dbTime, new DateTimeZone('UTC'));
-        $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
-        return $dt->format($format);
-    } catch (Exception $e) {
-        return $dbTime;
-    }
+    return date($format, strtotime($dbTime));
 }
 
 // Fetch summary metrics
 $userCount = (int)($conn->query("SELECT COUNT(*) FROM farm_users")->fetch_row()[0] ?? 0);
 $totalRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data")->fetch_row()[0] ?? 0);
-$todayRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data WHERE DATE(CONVERT_TZ(created_at, '+00:00', '+05:30')) = CURDATE()")->fetch_row()[0] ?? 0);
+$todayRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data WHERE DATE(created_at) = CURDATE()")->fetch_row()[0] ?? 0);
 
 $avgDsiRow = $conn->query("SELECT AVG(dsi) FROM sensor_data WHERE dsi IS NOT NULL")->fetch_row();
 $avgDsi = ($avgDsiRow && $avgDsiRow[0] !== null) ? round((float)$avgDsiRow[0], 2) : 'N/A';
