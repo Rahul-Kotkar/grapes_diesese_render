@@ -19,11 +19,11 @@ date_default_timezone_set('Asia/Kolkata');
 // Reads from Environment Variables (set in Render Dashboard) or defaults.
 // ─────────────────────────────────────────────────────────────────────────────
 
-define('DB_HOST', getenv('DB_HOST') ?: 'sql104.infinityfree.com');
-define('DB_NAME', getenv('DB_NAME') ?: 'if0_42485304_sensordb');
-define('DB_USER', getenv('DB_USER') ?: 'if0_42485304');
-define('DB_PASS', getenv('DB_PASS') ?: 'grapesdesese123');
-define('DB_PORT', getenv('DB_PORT') ? (int)getenv('DB_PORT') : 3306);
+define('DB_HOST', getenv('DB_HOST') ?: 'mysql-2a7b59d3-grapesml-ee2d.c.aivencloud.com');
+define('DB_NAME', getenv('DB_NAME') ?: 'defaultdb');
+define('DB_USER', getenv('DB_USER') ?: 'avnadmin');
+define('DB_PASS', getenv('DB_PASS') ?: 'YOUR_AIVEN_DB_PASSWORD');
+define('DB_PORT', getenv('DB_PORT') ? (int)getenv('DB_PORT') : 23935);
 define('DB_CHARSET', 'utf8mb4');
 
 // ─────────────────────────────────────────────────────────────────────────────
