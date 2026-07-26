@@ -6,8 +6,7 @@
  */
 
 /**
- * Calls the ML prediction API and returns the decoded JSON as an array.
- * Returns an empty array on any network or parse failure.
+ * Calls the ML prediction model directly (local Python CLI first, then HTTP fallback).
  *
  * @param float $temp      Temperature (°C)
  * @param float $rh        Relative Humidity (%)
@@ -18,6 +17,30 @@
  */
 function callMLApi(float $temp, float $rh, float $sunlight, float $rainfall, float $leafw, int $timeout = 20): array
 {
+    // ── STEP 1: Try Local Python Inference (Instant 10ms execution, zero sleeping API) ──
+    $predictScript = dirname(__DIR__) . '/model/predict.py';
+    if (file_exists($predictScript)) {
+        // Escaped CLI arguments: temp, rh, sunlight, rainfall, leafw
+        $cmd = sprintf(
+            'python3 %s %s %s %s %s %s 2>&1',
+            escapeshellarg($predictScript),
+            escapeshellarg((string)$temp),
+            escapeshellarg((string)$rh),
+            escapeshellarg((string)$sunlight),
+            escapeshellarg((string)$rainfall),
+            escapeshellarg((string)$leafw)
+        );
+
+        $output = @shell_exec($cmd);
+        if (!empty($output)) {
+            $decoded = json_decode(trim($output), true);
+            if (is_array($decoded) && isset($decoded['dsi'], $decoded['risk_level'])) {
+                return $decoded;
+            }
+        }
+    }
+
+    // ── STEP 2: Fallback to Remote HTTP ML API ──────────────────────────────────────────
     $payload = json_encode([
         'Leafwetness' => $leafw,
         'Rain-level'  => $rainfall,
