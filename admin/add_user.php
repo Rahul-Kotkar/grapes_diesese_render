@@ -10,6 +10,7 @@ require_once '../api/config.php';
 $conn   = getDBConnection();
 $editId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $isEdit = $editId > 0;
+$pageTitle = $isEdit ? 'Edit User' : 'Add User';
 
 // Load existing row for edit
 $existing = ['username' => '', 'status' => 0];
@@ -66,46 +67,61 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $isEdit ? 'Edit User' : 'Add User' ?> — Farm Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrapper">
     <?php include 'sidebar.php'; ?>
     <div class="main">
-        <div class="topbar"></div>
+        <?php include 'topbar.php'; ?>
         <div class="content">
-            <h1 class="page-title"><?= $isEdit ? 'Edit User' : 'Add New User' ?></h1>
+
+            <div class="page-header">
+                <div class="page-title-wrap">
+                    <h1 class="page-title"><?= $isEdit ? 'Edit Farm User' : 'Create New Farm User' ?></h1>
+                    <p class="page-subtitle"><?= $isEdit ? 'Update account credentials and status' : 'Add a new authorized IoT device user account' ?></p>
+                </div>
+                <a href="users.php" class="btn btn-secondary" id="btn-cancel-top">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Users List
+                </a>
+            </div>
 
             <?php if ($error): ?>
-            <div class="alert alert-error" style="margin-bottom:16px;"><?= htmlspecialchars($error) ?></div>
+            <div class="alert alert-error" style="margin-bottom:20px;">
+                <i class="fa-solid fa-circle-exclamation"></i> <?= htmlspecialchars($error) ?>
+            </div>
             <?php endif; ?>
             <?php if ($success): ?>
-            <div class="alert" style="background:#d4edda;border:1px solid #c3e6cb;color:#155724;padding:10px 14px;border-radius:5px;margin-bottom:16px;"><?= htmlspecialchars($success) ?></div>
+            <div class="alert alert-success" style="margin-bottom:20px;">
+                <i class="fa-solid fa-circle-check"></i> <?= htmlspecialchars($success) ?>
+            </div>
             <?php endif; ?>
 
             <div class="form-card">
                 <form method="POST" id="user-form">
                     <div class="form-group">
-                        <label for="username">Username</label>
+                        <label for="username"><i class="fa-solid fa-user" style="color:var(--text-muted);margin-right:4px;"></i> Username</label>
                         <input type="text" id="username" name="username" required maxlength="100"
                                value="<?= htmlspecialchars($existing['username']) ?>"
                                placeholder="e.g. Farm1">
                     </div>
                     <div class="form-group">
-                        <label for="status">Status</label>
+                        <label for="status"><i class="fa-solid fa-toggle-on" style="color:var(--text-muted);margin-right:4px;"></i> Account Status</label>
                         <select id="status" name="status">
-                            <option value="0" <?= (int)$existing['status'] === 0 ? 'selected' : '' ?>>0 — Active</option>
-                            <option value="1" <?= (int)$existing['status'] === 1 ? 'selected' : '' ?>>1 — Inactive</option>
+                            <option value="0" <?= (int)$existing['status'] === 0 ? 'selected' : '' ?>>0 — Active (Access Allowed)</option>
+                            <option value="1" <?= (int)$existing['status'] === 1 ? 'selected' : '' ?>>1 — Inactive (Access Restricted)</option>
                         </select>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn-save" id="btn-save-user">
-                            <?= $isEdit ? 'Update User' : 'Add User' ?>
+                            <i class="fa-solid fa-check"></i> <?= $isEdit ? 'Update User' : 'Create User' ?>
                         </button>
                         <a href="users.php" class="btn-cancel" id="btn-cancel">Cancel</a>
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 </div>

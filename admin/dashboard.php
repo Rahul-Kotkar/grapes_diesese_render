@@ -1,13 +1,25 @@
 <?php
 /**
- * dashboard.php  —  DSI Disease Risk Chart
- * Shows the last 30 sensor readings (with ML prediction) as a line chart.
+ * dashboard.php  —  DSI Disease Risk Chart & Modern SaaS Metrics Dashboard
  */
 require_once 'auth_check.php';
 require_once '../api/config.php';
 
+$pageTitle = 'Dashboard';
 $conn = getDBConnection();
 
+// Fetch summary metrics
+$userCount = (int)($conn->query("SELECT COUNT(*) FROM farm_users")->fetch_row()[0] ?? 0);
+$totalRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data")->fetch_row()[0] ?? 0);
+$todayRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data WHERE DATE(created_at) = CURDATE()")->fetch_row()[0] ?? 0);
+
+$avgDsiRow = $conn->query("SELECT AVG(dsi) FROM sensor_data WHERE dsi IS NOT NULL")->fetch_row();
+$avgDsi = ($avgDsiRow && $avgDsiRow[0] !== null) ? round((float)$avgDsiRow[0], 2) : 'N/A';
+
+$lastSyncRow = $conn->query("SELECT MAX(created_at) FROM sensor_data")->fetch_row();
+$lastSync = ($lastSyncRow && $lastSyncRow[0]) ? date('H:i:s, d M', strtotime($lastSyncRow[0])) : 'Never';
+
+// Fetch last 30 sensor readings with prediction for chart
 $sql = "SELECT created_at, temperature, humidity, sunlight, rainfall, leaf_wetness, dsi, risk_level
         FROM sensor_data
         WHERE dsi IS NOT NULL
@@ -21,19 +33,30 @@ if ($result) {
         $rows[] = $row;
     }
 }
+
+// Fetch recent 6 sensor readings for live feed
+$recentFeed = array_slice($rows, 0, 6);
+
 $conn->close();
 
 // Reverse so chart is chronological left → right
-$rows   = array_reverse($rows);
-$labels = [];
-$dsiVals = [];
-foreach ($rows as $r) {
+$chartRows = array_reverse($rows);
+$labels    = [];
+$dsiVals   = [];
+$tempVals  = [];
+$rhVals    = [];
+
+foreach ($chartRows as $r) {
     $labels[]   = date('d/m H:i', strtotime($r['created_at']));
-    $dsiVals[]  = round((float)$r['dsi'], 4);
+    $dsiVals[]  = round((float)$r['dsi'], 2);
+    $tempVals[] = round((float)$r['temperature'], 1);
+    $rhVals[]   = round((float)$r['humidity'], 1);
 }
 
 $labelsJson = json_encode($labels);
 $dsiJson    = json_encode($dsiVals);
+$tempJson   = json_encode($tempVals);
+$rhJson     = json_encode($rhVals);
 $count      = count($rows);
 ?>
 <!DOCTYPE html>
@@ -41,8 +64,8 @@ $count      = count($rows);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Farm Admin Panel</title>
-    <meta name="description" content="Grape disease risk dashboard showing DSI trends from sensor data.">
+    <title>Dashboard — Smart Agriculture Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -50,20 +73,170 @@ $count      = count($rows);
 <div class="wrapper">
     <?php include 'sidebar.php'; ?>
     <div class="main">
-        <div class="topbar"></div>
+        <?php include 'topbar.php'; ?>
         <div class="content">
-            <h1 class="page-title">Dashboard</h1>
+            
+            <div class="page-header">
+                <div class="page-title-wrap">
+                    <h1 class="page-title">Grape Farm Overview</h1>
+                    <p class="page-subtitle">Real-time IoT sensor telemetry & Ridge ML disease risk predictions</p>
+                </div>
+            </div>
 
-            <?php if ($count === 0): ?>
-            <div class="alert" style="background:#fff3cd;border:1px solid #ffe08a;color:#856404;padding:12px 16px;border-radius:6px;">
-                No prediction data yet. Sensor readings will appear here once the ESP32 sends data and the ML API responds.
+            <!-- Stats Widgets Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Total Active Devices</span>
+                        <div class="stat-card-icon icon-emerald">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-body">
+                        <span class="stat-card-value">1 Device</span>
+                        <span class="stat-card-desc">
+                            <span class="trend-badge trend-up"><i class="fa-solid fa-signal"></i> Online</span> ESP32 Gateway
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Registered Users</span>
+                        <div class="stat-card-icon icon-blue">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-body">
+                        <span class="stat-card-value"><?= number_format($userCount) ?></span>
+                        <span class="stat-card-desc">
+                            <span class="trend-badge trend-neutral">Farm Admins</span> Authorized access
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Total Sensor Data</span>
+                        <div class="stat-card-icon icon-purple">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-body">
+                        <span class="stat-card-value"><?= number_format($totalRecords) ?></span>
+                        <span class="stat-card-desc">
+                            <span class="trend-badge trend-up"><i class="fa-solid fa-arrow-up"></i> Active</span> Database records
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Avg Disease Risk (DSI)</span>
+                        <div class="stat-card-icon icon-amber">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-body">
+                        <span class="stat-card-value"><?= $avgDsi ?>%</span>
+                        <span class="stat-card-desc">
+                            <span class="trend-badge trend-neutral">ML Severity</span> Ridge Model Output
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Today's Ingestions</span>
+                        <div class="stat-card-icon icon-green">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-body">
+                        <span class="stat-card-value"><?= number_format($todayRecords) ?></span>
+                        <span class="stat-card-desc">
+                            <span class="trend-badge trend-up">Recorded</span> Saved today
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Last Data Sync</span>
+                        <div class="stat-card-icon icon-rose">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-body">
+                        <span class="stat-card-value" style="font-size:18px;line-height:1.2;"><?= htmlspecialchars($lastSync) ?></span>
+                        <span class="stat-card-desc">
+                            <span class="trend-badge trend-up"><i class="fa-solid fa-circle"></i> Live</span> Auto Ingestion
+                        </span>
+                    </div>
+                </div>
             </div>
-            <?php else: ?>
-            <div class="chart-wrap">
-                <canvas id="dsiChart" height="90"></canvas>
+
+            <!-- Main Dashboard Layout Grid -->
+            <div class="dashboard-grid">
+                <!-- Left: Chart Widget -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title-area">
+                            <h2 class="chart-title">Disease Severity Index (DSI) & Climate Trends</h2>
+                            <p class="chart-subtitle">Showing recent <?= $count ?> telemetry readings & ML disease predictions</p>
+                        </div>
+                    </div>
+
+                    <?php if ($count === 0): ?>
+                    <div class="alert alert-warning">
+                        <i class="fa-solid fa-circle-info"></i> No sensor prediction data recorded yet.
+                    </div>
+                    <?php else: ?>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="dsiChart" height="280"></canvas>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Right: Recent Activity Feed Widget -->
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <h2 class="chart-title">Recent Telemetry Feed</h2>
+                        <a href="logs.php" style="font-size:12px;font-weight:600;color:var(--primary);">View All →</a>
+                    </div>
+                    <div class="activity-list">
+                        <?php if (empty($recentFeed)): ?>
+                        <p style="font-size:13px;color:var(--text-muted);">No recent records.</p>
+                        <?php else: ?>
+                            <?php foreach ($recentFeed as $feed): 
+                                $risk = strtolower($feed['risk_level'] ?? 'low');
+                                $badgeClass = match($risk) {
+                                    'low' => 'badge-active',
+                                    'medium' => 'trend-badge trend-neutral',
+                                    'high' => 'trend-badge trend-down',
+                                    default => 'badge-inactive'
+                                };
+                            ?>
+                            <div class="activity-item">
+                                <div class="activity-meta">
+                                    <div class="activity-icon">
+                                        <i class="fa-solid fa-temperature-half"></i>
+                                    </div>
+                                    <div class="activity-details">
+                                        <span class="activity-time"><?= date('H:i:s, d M', strtotime($feed['created_at'])) ?></span>
+                                        <span class="activity-sensors"><?= $feed['temperature'] ?>°C | <?= $feed['humidity'] ?>% RH | Leaf: <?= $feed['leaf_wetness'] ?></span>
+                                    </div>
+                                </div>
+                                <span class="<?= $badgeClass ?>">
+                                    <?= htmlspecialchars($feed['risk_level'] ?? 'N/A') ?> (<?= round((float)$feed['dsi'], 1) ?>%)
+                                </span>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
-            <p class="chart-footer">Last <?= $count ?> Records</p>
-            <?php endif; ?>
+
         </div>
     </div>
 </div>
@@ -71,47 +244,95 @@ $count      = count($rows);
 <script>
 const labels   = <?= $labelsJson ?>;
 const dsiVals  = <?= $dsiJson ?>;
+const tempVals = <?= $tempJson ?>;
 
 if (labels.length > 0) {
     const ctx = document.getElementById('dsiChart').getContext('2d');
+    
+    // Gradient fill for chart
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(22, 163, 74, 0.25)');
+    gradient.addColorStop(1, 'rgba(22, 163, 74, 0.0)');
+
     new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Disease Risk (DSI)',
-                data: dsiVals,
-                borderColor: '#dc3545',
-                backgroundColor: 'rgba(180, 180, 180, 0.25)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 2,
-                pointHoverRadius: 5,
-                pointBackgroundColor: '#dc3545',
-            }]
+            datasets: [
+                {
+                    label: 'Disease Risk (DSI %)',
+                    data: dsiVals,
+                    borderColor: '#16a34a',
+                    backgroundColor: gradient,
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#16a34a',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Temperature (°C)',
+                    data: tempVals,
+                    borderColor: '#3b82f6',
+                    borderWidth: 1.5,
+                    borderDash: [4, 4],
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    yAxisID: 'y1'
+                }
+            ]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
                     position: 'top',
-                    labels: { font: { family: 'Inter', size: 12 }, boxWidth: 28 }
+                    align: 'end',
+                    labels: {
+                        font: { family: 'Inter', size: 12, weight: '500' },
+                        usePointStyle: true,
+                        boxWidth: 8
+                    }
                 },
                 tooltip: {
-                    callbacks: {
-                        label: ctx => ' DSI: ' + ctx.parsed.y
-                    }
+                    backgroundColor: '#111827',
+                    padding: 12,
+                    titleFont: { family: 'Inter', size: 13, weight: '600' },
+                    bodyFont: { family: 'Inter', size: 12 },
+                    cornerRadius: 8,
+                    displayColors: true
                 }
             },
             scales: {
                 x: {
-                    grid: { color: '#e8e8e8' },
-                    ticks: { font: { family: 'Inter', size: 11 }, maxRotation: 45 }
+                    grid: { color: '#f3f4f6' },
+                    ticks: { font: { family: 'Inter', size: 11 }, color: '#6b7280', maxRotation: 45 }
                 },
                 y: {
-                    grid: { color: '#e8e8e8' },
-                    ticks: { font: { family: 'Inter', size: 11 } }
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: '#f3f4f6' },
+                    ticks: { font: { family: 'Inter', size: 11 }, color: '#6b7280' },
+                    title: { display: true, text: 'DSI Disease Index (%)', font: { family: 'Inter', size: 11 } }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: { font: { family: 'Inter', size: 11 }, color: '#3b82f6' },
+                    title: { display: true, text: 'Temp (°C)', font: { family: 'Inter', size: 11 } }
                 }
             }
         }

@@ -30,34 +30,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — Farm Admin Panel</title>
+    <title>Login — GPR Farm Admin Panel</title>
     <meta name="description" content="Admin login for the Grape Disease Monitoring System.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-body">
     <div class="login-card">
-        <div class="brand">
-            Farm Admin Panel
-            <small>Grape Disease Monitoring System</small>
+        <div class="login-brand">
+            <div class="login-logo">
+                <i class="fa-solid fa-leaf"></i>
+            </div>
+            <h1 class="login-title">Farm Admin Panel</h1>
+            <p class="login-subtitle">Grape Disease Monitoring & AI Prediction System</p>
         </div>
 
         <?php if ($error): ?>
-        <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+        <div class="alert alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <?= htmlspecialchars($error) ?>
+        </div>
         <?php endif; ?>
 
         <form method="POST" id="login-form">
             <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="admin"
+                <label for="username"><i class="fa-regular fa-user" style="margin-right:4px;"></i> Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username"
                        required autocomplete="username"
                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password"><i class="fa-solid fa-lock" style="margin-right:4px;"></i> Password</label>
                 <input type="password" id="password" name="password"
                        placeholder="••••••••" required autocomplete="current-password">
             </div>
-            <button type="submit" class="btn-login-submit" id="login-btn">Login</button>
+            <button type="submit" class="btn-login-submit" id="login-btn">
+                Sign In to Dashboard <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
+            </button>
         </form>
     </div>
 </body>

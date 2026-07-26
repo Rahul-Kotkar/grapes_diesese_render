@@ -1,25 +1,62 @@
 <?php
 /**
  * sidebar.php
- * Reusable sidebar navigation. Include inside .wrapper div.
- * Expects $activePage variable set to 'dashboard'|'users' etc.
+ * Reusable modern vertical sidebar navigation.
  */
 $current = basename($_SERVER['PHP_SELF'], '.php');
 ?>
-<aside class="sidebar">
-    <div class="sidebar-logo">Farm Admin Panel</div>
-    <nav>
-        <a href="dashboard.php" class="<?= $current === 'dashboard' ? 'active' : '' ?>">
-            <span class="icon">⊞</span> Dashboard
-        </a>
-        <a href="users.php" class="<?= ($current === 'users' || $current === 'add_user' || $current === 'user_access_log') ? 'active' : '' ?>">
-            <span class="icon">👤</span> Users
-        </a>
-        <a href="raw_db.php" class="<?= $current === 'raw_db' ? 'active' : '' ?>">
-            <span class="icon">🗄️</span> Raw DB Tables
-        </a>
-        <a href="logout.php">
-            <span class="icon">⏻</span> Logout
-        </a>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="brand-logo">
+            <div class="logo-icon">
+                <i class="fa-solid fa-leaf"></i>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">GPR Farm</span>
+                <span class="brand-sub">Smart Monitoring</span>
+            </div>
+        </div>
+        <button class="mobile-close-btn" id="sidebar-close-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <span class="nav-section-title">MAIN MENU</span>
+            <a href="dashboard.php" class="nav-link <?= $current === 'dashboard' ? 'active' : '' ?>">
+                <i class="fa-solid fa-chart-line nav-icon"></i>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="users.php" class="nav-link <?= ($current === 'users' || $current === 'add_user' || $current === 'user_access_log') ? 'active' : '' ?>">
+                <i class="fa-solid fa-users nav-icon"></i>
+                <span class="nav-label">Farm Users</span>
+            </a>
+            <a href="logs.php" class="nav-link <?= $current === 'logs' ? 'active' : '' ?>">
+                <i class="fa-solid fa-microchip nav-icon"></i>
+                <span class="nav-label">Sensor Logs</span>
+            </a>
+        </div>
+
+        <div class="nav-section" style="margin-top: auto;">
+            <span class="nav-section-title">SYSTEM</span>
+            <a href="https://grapes-diesese-render.onrender.com/api/test.html" target="_blank" class="nav-link">
+                <i class="fa-solid fa-flask nav-icon"></i>
+                <span class="nav-label">API Tester</span>
+                <span class="nav-tag">Live</span>
+            </a>
+            <a href="logout.php" class="nav-link nav-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket nav-icon"></i>
+                <span class="nav-label">Logout</span>
+            </a>
+        </div>
     </nav>
+
+    <div class="sidebar-user-footer">
+        <div class="user-avatar">A</div>
+        <div class="user-info">
+            <span class="user-name">Administrator</span>
+            <span class="user-role"><span class="status-dot"></span> Online</span>
+        </div>
+    </div>
 </aside>
