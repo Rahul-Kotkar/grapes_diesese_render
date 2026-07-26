@@ -3,8 +3,9 @@ FROM php:8.2-apache
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Install MySQLi extension for PHP
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Install PostgreSQL development libraries & PHP extensions for MySQL & PostgreSQL
+RUN apt-get update && apt-get install -y libpq-dev \
+    && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql
 
 # Set working directory
 WORKDIR /var/www/html
