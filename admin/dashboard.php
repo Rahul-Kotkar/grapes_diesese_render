@@ -8,16 +8,28 @@ require_once '../api/config.php';
 $pageTitle = 'Dashboard';
 $conn = getDBConnection();
 
+// Helper to format DB timestamps to IST (+5:30)
+function formatToIST(?string $dbTime, string $format = 'H:i:s, d M'): string {
+    if (empty($dbTime)) return 'Never';
+    try {
+        $dt = new DateTime($dbTime, new DateTimeZone('UTC'));
+        $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+        return $dt->format($format);
+    } catch (Exception $e) {
+        return $dbTime;
+    }
+}
+
 // Fetch summary metrics
 $userCount = (int)($conn->query("SELECT COUNT(*) FROM farm_users")->fetch_row()[0] ?? 0);
 $totalRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data")->fetch_row()[0] ?? 0);
-$todayRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data WHERE DATE(created_at) = CURDATE()")->fetch_row()[0] ?? 0);
+$todayRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data WHERE DATE(CONVERT_TZ(created_at, '+00:00', '+05:30')) = CURDATE()")->fetch_row()[0] ?? 0);
 
 $avgDsiRow = $conn->query("SELECT AVG(dsi) FROM sensor_data WHERE dsi IS NOT NULL")->fetch_row();
 $avgDsi = ($avgDsiRow && $avgDsiRow[0] !== null) ? round((float)$avgDsiRow[0], 2) : 'N/A';
 
 $lastSyncRow = $conn->query("SELECT MAX(created_at) FROM sensor_data")->fetch_row();
-$lastSync = ($lastSyncRow && $lastSyncRow[0]) ? date('H:i:s, d M', strtotime($lastSyncRow[0])) : 'Never';
+$lastSync = formatToIST($lastSyncRow[0] ?? null, 'H:i:s, d M');
 
 // Fetch last 30 sensor readings with prediction for chart
 $sql = "SELECT created_at, temperature, humidity, sunlight, rainfall, leaf_wetness, dsi, risk_level
@@ -44,19 +56,16 @@ $chartRows = array_reverse($rows);
 $labels    = [];
 $dsiVals   = [];
 $tempVals  = [];
-$rhVals    = [];
 
 foreach ($chartRows as $r) {
-    $labels[]   = date('d/m H:i', strtotime($r['created_at']));
+    $labels[]   = formatToIST($r['created_at'], 'd/m H:i');
     $dsiVals[]  = round((float)$r['dsi'], 2);
     $tempVals[] = round((float)$r['temperature'], 1);
-    $rhVals[]   = round((float)$r['humidity'], 1);
 }
 
 $labelsJson = json_encode($labels);
 $dsiJson    = json_encode($dsiVals);
 $tempJson   = json_encode($tempVals);
-$rhJson     = json_encode($rhVals);
 $count      = count($rows);
 ?>
 <!DOCTYPE html>
@@ -79,7 +88,7 @@ $count      = count($rows);
             <div class="page-header">
                 <div class="page-title-wrap">
                     <h1 class="page-title">Grape Farm Overview</h1>
-                    <p class="page-subtitle">Real-time IoT sensor telemetry & Ridge ML disease risk predictions</p>
+                    <p class="page-subtitle">Real-time IoT sensor telemetry & Ridge ML disease risk predictions (+05:30 IST)</p>
                 </div>
             </div>
 
@@ -155,22 +164,22 @@ $count      = count($rows);
                     <div class="stat-card-body">
                         <span class="stat-card-value"><?= number_format($todayRecords) ?></span>
                         <span class="stat-card-desc">
-                            <span class="trend-badge trend-up">Recorded</span> Saved today
+                            <span class="trend-badge trend-up">Recorded</span> IST Today
                         </span>
                     </div>
                 </div>
 
                 <div class="stat-card">
                     <div class="stat-card-header">
-                        <span class="stat-card-title">Last Data Sync</span>
+                        <span class="stat-card-title">Last Data Sync (IST)</span>
                         <div class="stat-card-icon icon-rose">
                             <i class="fa-solid fa-arrows-rotate"></i>
                         </div>
                     </div>
                     <div class="stat-card-body">
-                        <span class="stat-card-value" style="font-size:18px;line-height:1.2;"><?= htmlspecialchars($lastSync) ?></span>
+                        <span class="stat-card-value" style="font-size:17px;line-height:1.2;"><?= htmlspecialchars($lastSync) ?></span>
                         <span class="stat-card-desc">
-                            <span class="trend-badge trend-up"><i class="fa-solid fa-circle"></i> Live</span> Auto Ingestion
+                            <span class="trend-badge trend-up"><i class="fa-solid fa-circle"></i> Live</span> IST (+5:30)
                         </span>
                     </div>
                 </div>
@@ -183,7 +192,7 @@ $count      = count($rows);
                     <div class="chart-header">
                         <div class="chart-title-area">
                             <h2 class="chart-title">Disease Severity Index (DSI) & Climate Trends</h2>
-                            <p class="chart-subtitle">Showing recent <?= $count ?> telemetry readings & ML disease predictions</p>
+                            <p class="chart-subtitle">Showing recent <?= $count ?> telemetry readings & ML predictions in IST (+5:30)</p>
                         </div>
                     </div>
 
@@ -223,7 +232,7 @@ $count      = count($rows);
                                         <i class="fa-solid fa-temperature-half"></i>
                                     </div>
                                     <div class="activity-details">
-                                        <span class="activity-time"><?= date('H:i:s, d M', strtotime($feed['created_at'])) ?></span>
+                                        <span class="activity-time"><?= formatToIST($feed['created_at'], 'H:i:s, d M') ?></span>
                                         <span class="activity-sensors"><?= $feed['temperature'] ?>°C | <?= $feed['humidity'] ?>% RH | Leaf: <?= $feed['leaf_wetness'] ?></span>
                                     </div>
                                 </div>

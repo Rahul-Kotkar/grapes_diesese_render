@@ -14,6 +14,18 @@ if ($userId === 0) {
 $pageTitle = 'User Access Log';
 $conn = getDBConnection();
 
+// Helper to format DB timestamps to IST (+5:30)
+function formatToIST(?string $dbTime, string $format = 'd-m-Y H:i:s'): string {
+    if (empty($dbTime)) return 'N/A';
+    try {
+        $dt = new DateTime($dbTime, new DateTimeZone('UTC'));
+        $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+        return $dt->format($format);
+    } catch (Exception $e) {
+        return $dbTime;
+    }
+}
+
 // Get username
 $uStmt = $conn->prepare("SELECT username FROM farm_users WHERE id = ?");
 $uStmt->bind_param('i', $userId);
@@ -80,7 +92,7 @@ function palUrl(int $p, int $uid): string {
             <div class="page-header">
                 <div class="page-title-wrap">
                     <h1 class="page-title">Access Telemetry — <?= $username ?></h1>
-                    <p class="page-subtitle">Historical sensor readings ingested for farm account #<?= $userId ?></p>
+                    <p class="page-subtitle">Historical sensor readings in IST (+05:30) for farm account #<?= $userId ?></p>
                 </div>
                 <a href="users.php" class="btn btn-secondary">
                     <i class="fa-solid fa-arrow-left"></i> Back to Users List
@@ -92,7 +104,7 @@ function palUrl(int $p, int $uid): string {
                 <div class="toolbar">
                     <div class="toolbar-left">
                         <span style="font-size:13px;font-weight:600;color:var(--text-main);">
-                            Showing Telemetry Log History for <strong><?= $username ?></strong>
+                            Showing Telemetry Log History for <strong><?= $username ?></strong> (IST +05:30)
                         </span>
                     </div>
                 </div>
@@ -101,7 +113,7 @@ function palUrl(int $p, int $uid): string {
                     <table class="data-table" id="access-log-table">
                         <thead>
                             <tr>
-                                <th>Timestamp</th>
+                                <th>Timestamp (IST)</th>
                                 <th>Temp</th>
                                 <th>RH</th>
                                 <th>Sunlight</th>
@@ -124,7 +136,7 @@ function palUrl(int $p, int $uid): string {
                                 <td>
                                     <span style="font-weight:600;font-size:12.5px;color:var(--text-main);">
                                         <i class="fa-regular fa-clock" style="color:var(--text-light);margin-right:4px;"></i>
-                                        <?= date('d-m-Y H:i:s', strtotime($r['created_at'])) ?>
+                                        <?= formatToIST($r['created_at']) ?>
                                     </span>
                                 </td>
                                 <td>

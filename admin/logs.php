@@ -8,10 +8,17 @@ require_once '../api/config.php';
 $pageTitle = 'Sensor Telemetry Logs';
 $conn = getDBConnection();
 
-// ── Detect MySQL server's UTC offset so we can display all times in IST ──────
-$tzRow = $conn->query("SELECT TIME_TO_SEC(TIMEDIFF(NOW(), UTC_TIMESTAMP())) AS off")->fetch_assoc();
-$serverOffsetSec = (int)($tzRow['off'] ?? 0);
-$toIST = 19800 - $serverOffsetSec;   // seconds to ADD to server time to get IST
+// Helper to format DB timestamps to IST (+5:30)
+function formatToIST(?string $dbTime, string $format = 'd-m-Y H:i:s'): string {
+    if (empty($dbTime)) return 'N/A';
+    try {
+        $dt = new DateTime($dbTime, new DateTimeZone('UTC'));
+        $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+        return $dt->format($format);
+    } catch (Exception $e) {
+        return $dbTime;
+    }
+}
 
 $filterUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
 
@@ -116,7 +123,7 @@ function riskClass(string $risk): string {
             <div class="page-header">
                 <div class="page-title-wrap">
                     <h1 class="page-title">Sensor Telemetry & Disease Risk Logs<?= $filterUserId ? ' (User #' . $filterUserId . ')' : '' ?></h1>
-                    <p class="page-subtitle">Real-time IoT sensor readings with calculated Ridge ML severity predictions</p>
+                    <p class="page-subtitle">Real-time IoT sensor readings in IST (+05:30) with Ridge ML severity predictions</p>
                 </div>
                 <div style="display:flex;gap:10px;">
                     <button class="btn btn-secondary" onclick="window.location.reload()" title="Refresh Logs">
@@ -170,7 +177,7 @@ function riskClass(string $risk): string {
                     <table class="data-table" id="logs-table">
                         <thead>
                             <tr>
-                                <th>Timestamp</th>
+                                <th>Timestamp (IST)</th>
                                 <th>Temperature</th>
                                 <th>Humidity</th>
                                 <th>Sunlight</th>
@@ -193,7 +200,7 @@ function riskClass(string $risk): string {
                                 <td>
                                     <span style="font-weight:600;font-size:12.5px;color:var(--text-main);">
                                         <i class="fa-regular fa-clock" style="color:var(--text-light);margin-right:4px;"></i>
-                                        <?= date('d M Y, H:i:s', strtotime($r['created_at']) + $toIST) ?>
+                                        <?= formatToIST($r['created_at']) ?>
                                     </span>
                                 </td>
                                 <td>
