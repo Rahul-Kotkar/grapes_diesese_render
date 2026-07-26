@@ -1,0 +1,25 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .gitignore — GrapesDisease IoT Sensor API
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Never commit real config credentials
+# (config.php is kept for structure, but you should use a local override)
+# api/config.php   ← Uncomment this line if you store real creds locally
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+
+# PHP error logs
+*.log
+error_log
+
+# Local environment overrides
+*.local.php

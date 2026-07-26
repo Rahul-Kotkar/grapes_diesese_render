@@ -1,0 +1,49 @@
+name: Backfill ML Predictions
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Runs every 10 minutes to find sensor_data rows where dsi IS NULL
+# (ML prediction was missed because Render was asleep) and fills them in.
+#
+# REQUIRED GitHub Secret:
+#   BACKFILL_SECRET  →  must match BACKFILL_SECRET in api/config.php
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 minutes, 24×7
+  workflow_dispatch:           # also allows manual trigger from GitHub UI
+
+jobs:
+  backfill:
+    name: 🔮 Backfill NULL DSI Rows
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      # ── Call the backfill endpoint ──────────────────────────────────────────
+      # --max-time 90 gives Render up to 90 s to cold-start before curl gives up.
+      # -s = silent (no progress bar), -w = append HTTP status on a new line.
+      - name: 📡 Trigger backfill endpoint
+        id: call
+        run: |
+          echo "=== Calling backfill endpoint at $(date -u) ==="
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            --max-time 90 \
+            "${{ secrets.RENDER_APP_URL || 'https://grapes-disease-php.onrender.com' }}/api/backfill.php?secret=${{ secrets.BACKFILL_SECRET }}")
+
+          # Split body and HTTP status code
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "HTTP Status : $HTTP_CODE"
+          echo "Response    : $BODY"
+
+          # Surface a warning (not a failure) if the endpoint returned non-200
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::warning::Backfill endpoint returned HTTP $HTTP_CODE"
+          fi
+
+          # Make the response available to later steps if needed
+          echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+          echo "body=$BODY"           >> "$GITHUB_OUTPUT"

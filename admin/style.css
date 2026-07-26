@@ -1,0 +1,203 @@
+/* =========================================================
+   style.css  —  Farm Admin Panel
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Reset & Base ───────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f4f4f4; color: #333; font-size: 14px; }
+a { text-decoration: none; color: inherit; }
+
+/* ── Layout ─────────────────────────────────────────────── */
+.wrapper { display: flex; min-height: 100vh; }
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+    width: 160px;
+    background: #8B1A1A;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    z-index: 100;
+}
+.sidebar-logo {
+    background: #6B1010;
+    padding: 13px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: 0.2px;
+}
+.sidebar nav { margin-top: 10px; }
+.sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 18px;
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.18s;
+    border-left: 3px solid transparent;
+}
+.sidebar nav a:hover,
+.sidebar nav a.active {
+    background: rgba(0,0,0,0.25);
+    border-left-color: #fff;
+    color: #fff;
+}
+.sidebar nav a .icon { font-size: 15px; width: 18px; text-align: center; }
+
+/* ── Main area ───────────────────────────────────────────── */
+.main { margin-left: 160px; flex: 1; display: flex; flex-direction: column; }
+.topbar { background: #8B1A1A; height: 44px; width: 100%; flex-shrink: 0; }
+.content { padding: 28px 32px; background: #fff; min-height: calc(100vh - 44px); }
+
+/* ── Page title ──────────────────────────────────────────── */
+.page-title { font-size: 22px; font-weight: 700; margin-bottom: 22px; color: #222; }
+
+/* ── Toolbar (search + buttons row) ─────────────────────── */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 8px; }
+.search-select, .search-input {
+    padding: 7px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #555;
+    outline: none;
+}
+.search-select:focus, .search-input:focus { border-color: #8B1A1A; }
+.search-input { min-width: 240px; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 15px;
+    border: none; border-radius: 20px;
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    font-family: inherit; text-decoration: none;
+    transition: opacity 0.15s, transform 0.1s;
+}
+.btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn-add       { background: #fff; border: 1.5px solid #28a745; color: #28a745; }
+.btn-green     { background: #28a745; color: #fff; }
+.btn-blue      { background: #1565C0; color: #fff; }
+.btn-red       { background: #dc3545; color: #fff; }
+.btn-print     { background: #fff; border: 1.5px solid #555; color: #555; font-size: 12px; }
+.btn-login-submit {
+    width: 100%; padding: 11px;
+    background: #8B1A1A; color: #fff;
+    border: none; border-radius: 6px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.2s;
+}
+.btn-login-submit:hover { background: #6B1010; }
+
+/* ── Table ───────────────────────────────────────────────── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead th {
+    font-weight: 600; font-size: 13px;
+    padding: 10px 12px;
+    border-bottom: 2px solid #e0e0e0;
+    text-align: center; color: #222;
+}
+.data-table tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #efefef;
+    text-align: center; vertical-align: middle;
+    font-size: 13px;
+}
+.data-table tbody tr:hover { background: #fafafa; }
+
+/* ── Risk badge ──────────────────────────────────────────── */
+.risk-badge {
+    display: inline-block;
+    background: #dc3545; color: #fff;
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 11.5px; font-weight: 500;
+    min-width: 170px; word-break: break-all;
+}
+.risk-badge.risk-low    { background: #28a745; }
+.risk-badge.risk-medium { background: #fd7e14; }
+.risk-badge.risk-high   { background: #dc3545; }
+.risk-badge.risk-na     { background: #aaa; }
+
+/* ── Pagination ──────────────────────────────────────────── */
+.pagination { display: flex; align-items: center; gap: 5px; margin-top: 18px; flex-wrap: wrap; }
+.pagination a, .pagination span {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 32px; height: 32px; padding: 0 10px;
+    border: 1px solid #ccc; border-radius: 20px;
+    font-size: 13px; color: #333;
+    transition: all 0.15s;
+}
+.pagination a:hover { background: #f0f0f0; }
+.pagination .current { background: #1565C0; color: #fff; border-color: #1565C0; }
+.pagination .disabled { color: #bbb; cursor: default; }
+.total-records { margin-top: 8px; font-size: 13px; color: #555; }
+
+/* ── Chart ───────────────────────────────────────────────── */
+.chart-wrap {
+    border: 1px solid #e8e8e8; border-radius: 8px;
+    padding: 20px; background: #fafafa;
+}
+.chart-footer { margin-top: 10px; font-size: 13px; color: #1565C0; }
+
+/* ── Login page ──────────────────────────────────────────── */
+body.login-body {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; background: #f0f0f0;
+}
+.login-card {
+    background: #fff; border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 40px 36px; width: 360px;
+}
+.login-card .brand {
+    background: #8B1A1A; color: #fff;
+    text-align: center; padding: 14px;
+    border-radius: 7px; margin-bottom: 28px;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.3px;
+}
+.login-card .brand small { display: block; font-size: 12px; font-weight: 400; opacity: 0.8; margin-top: 3px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #444; }
+.form-group input {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid #ccc; border-radius: 6px;
+    font-size: 14px; font-family: inherit;
+    outline: none; transition: border 0.2s;
+}
+.form-group input:focus { border-color: #8B1A1A; }
+.alert { padding: 9px 14px; border-radius: 5px; font-size: 13px; margin-bottom: 14px; }
+.alert-error { background: #fde8e8; color: #8B1A1A; border: 1px solid #f5c6c6; }
+
+/* ── Add/Edit form ───────────────────────────────────────── */
+.form-card { max-width: 460px; background: #fafafa; border: 1px solid #e5e5e5; border-radius: 8px; padding: 28px; }
+.form-card .form-group select {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid #ccc; border-radius: 6px;
+    font-size: 14px; font-family: inherit;
+}
+.form-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-save { background: #8B1A1A; color: #fff; border: none; border-radius: 6px; padding: 9px 22px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-cancel { background: #eee; color: #333; border: none; border-radius: 6px; padding: 9px 18px; font-size: 13px; cursor: pointer; font-family: inherit; }
+
+/* ── Username link in users table ────────────────────────── */
+.user-link { color: #1565C0; font-weight: 500; }

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPR Farm — API Test Panel</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 30px 20px;
+  }
+  .container { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; color: #48bb78; margin-bottom: 4px; }
+  .subtitle { color: #718096; font-size: 0.9rem; margin-bottom: 30px; }
+
+  .card {
+    background: #1a1d2e;
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 { font-size: 1rem; color: #90cdf4; margin-bottom: 16px; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge-mock { background: #744210; color: #fbd38d; }
+  .badge-real { background: #1a365d; color: #90cdf4; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label { font-size: 0.8rem; color: #a0aec0; display: block; margin-bottom: 4px; }
+  input {
+    width: 100%;
+    background: #0f1117;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: #48bb78; }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  button:hover { opacity: 0.85; transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+
+  .btn-mock { background: #d69e2e; color: #1a1d2e; }
+  .btn-real { background: #3182ce; color: #fff; }
+  .btn-copy { background: #2d3748; color: #a0aec0; border: 1px solid #4a5568; }
+
+  .url-box {
+    background: #0f1117;
+    border: 1px solid #2d3748;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: #68d391;
+    word-break: break-all;
+    margin-top: 14px;
+    font-family: monospace;
+  }
+
+  .result {
+    margin-top: 16px;
+    background: #0f1117;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: monospace;
+    font-size: 0.82rem;
+    min-height: 60px;
+    border-left: 3px solid #4a5568;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: none;
+  }
+  .result.success { border-left-color: #48bb78; }
+  .result.error   { border-left-color: #fc8181; }
+  .status-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    font-family: sans-serif;
+    font-weight: 700;
+  }
+  .status-ok  { background: #276749; color: #9ae6b4; }
+  .status-err { background: #742a2a; color: #feb2b2; }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #718096;
+    margin-top: 8px;
+  }
+  .spinner { display: none; color: #a0aec0; font-size: 0.85rem; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🌿 GPR Farm — API Test Panel</h1>
+  <p class="subtitle">Test your sensor API before connecting real hardware</p>
+
+  <!-- Input Fields -->
+  <div class="card">
+    <h2>📡 Sensor Parameters</h2>
+    <div class="grid">
+      <div>
+        <label>API Key</label>
+        <input type="text" id="key" value="GPRFarm">
+      </div>
+      <div>
+        <label>User ID</label>
+        <input type="number" id="user_id" value="2">
+      </div>
+      <div>
+        <label>Temperature (°C)</label>
+        <input type="number" id="temp" value="20" step="0.1">
+      </div>
+      <div>
+        <label>Humidity RH (%)</label>
+        <input type="number" id="rh" value="90" step="0.1">
+      </div>
+      <div>
+        <label>Sunlight</label>
+        <input type="number" id="sunlight" value="6" step="0.1">
+      </div>
+      <div>
+        <label>Rainfall (mm)</label>
+        <input type="number" id="rainfall" value="2" step="0.1">
+      </div>
+      <div>
+        <label>Leaf Wetness</label>
+        <input type="number" id="leafw" value="3.2" step="0.1">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-mock" onclick="runTest('mock')">🧪 Test MOCK (no DB)</button>
+      <button class="btn-real" onclick="runTest('real')">💾 Test REAL API (saves to DB)</button>
+    </div>
+
+    <div class="url-box" id="urlBox">← click a button to generate the URL</div>
+    <div class="spinner" id="spinner">⏳ Waiting for response...</div>
+    <div class="result" id="result"></div>
+    <div class="info-row" id="infoRow"></div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="card">
+    <h2>🔗 Quick Test URLs <span class="badge badge-mock">MOCK</span></h2>
+    <div class="url-box">
+      http://levetech.infinityfree.io/grapesml/api/mockdata?key=GPRFarm&temp=20&rh=90&sunlight=6&user_id=2&rainfall=2&leafw=3.2
+    </div>
+    <h2 style="margin-top:16px">🔗 Real API URL <span class="badge badge-real">LIVE</span></h2>
+    <div class="url-box">
+      http://levetech.infinityfree.io/grapesml/api/adddata?key=GPRFarm&temp=20&rh=90&sunlight=6&user_id=2&rainfall=2&leafw=3.2
+    </div>
+  </div>
+
+</div>
+
+<script>
+function buildParams() {
+  return {
+    key:      document.getElementById('key').value,
+    temp:     document.getElementById('temp').value,
+    rh:       document.getElementById('rh').value,
+    sunlight: document.getElementById('sunlight').value,
+    user_id:  document.getElementById('user_id').value,
+    rainfall: document.getElementById('rainfall').value,
+    leafw:    document.getElementById('leafw').value
+  };
+}
+
+function buildUrl(endpoint) {
+  const p   = buildParams();
+  const qs  = Object.entries(p).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  const base = window.location.origin + '/grapesml/api/' + endpoint;
+  return `${base}?${qs}`;
+}
+
+async function runTest(mode) {
+  const endpoint = mode === 'mock' ? 'mockdata' : 'adddata';
+  const url      = buildUrl(endpoint);
+
+  document.getElementById('urlBox').textContent = url;
+  document.getElementById('spinner').style.display = 'block';
+
+  const resultEl  = document.getElementById('result');
+  const infoEl    = document.getElementById('infoRow');
+  resultEl.style.display = 'none';
+
+  const t0 = Date.now();
+
+  try {
+    const res  = await fetch(url);
+    const ms   = Date.now() - t0;
+    const text = await res.text();
+    let pretty = text;
+    try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch(_) {}
+
+    const ok = res.ok || res.status === 201;
+    resultEl.className = 'result ' + (ok ? 'success' : 'error');
+    resultEl.innerHTML =
+      `<span class="status-badge ${ok ? 'status-ok' : 'status-err'}">HTTP ${res.status}</span>\n` + pretty;
+    resultEl.style.display = 'block';
+    infoEl.innerHTML = `<span>⏱ ${ms}ms</span><span>${new Date().toLocaleTimeString()}</span>`;
+  } catch (err) {
+    resultEl.className = 'result error';
+    resultEl.innerHTML = `<span class="status-badge status-err">NETWORK ERROR</span>\n${err.message}\n\nTip: Make sure the server files are deployed via FTP.`;
+    resultEl.style.display = 'block';
+    infoEl.innerHTML = '';
+  }
+
+  document.getElementById('spinner').style.display = 'none';
+}
+</script>
+</body>
+</html>

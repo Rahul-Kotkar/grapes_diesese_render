@@ -1,0 +1,41 @@
+# api/.htaccess
+# ─────────────────────────────────────────────────────────────────────────────
+# Apache config for the API directory on InfinityFree
+# Mirrors the URL pattern of ssinfotronix.in/grapesml/api/adddata (no .php)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── URL Rewriting — strip .php extension ─────────────────────────────────────
+# Makes /api/adddata work exactly like /api/adddata.php
+# So your URL matches the reference server:
+#   http://levetech.infinityfree.io/grapesml/api/adddata?key=GPRFarm&...
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If the request is NOT an existing file or directory
+    # and the request has no extension → append .php and serve it
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+)$ $1.php [L,QSA]
+</IfModule>
+
+# ── Security — block direct access to config.php ──────────────────────────────
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# ── Security — disable directory listing ──────────────────────────────────────
+Options -Indexes
+
+# ── Security — block hidden files (.env, .git, etc.) ─────────────────────────
+<FilesMatch "^\\.">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# ── No caching for API responses ──────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate"
+    Header set Pragma "no-cache"
+</IfModule>

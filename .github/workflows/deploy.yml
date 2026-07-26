@@ -1,0 +1,24 @@
+name: Render Deployment Status Check
+
+# Render automatically deploys your code on push to main branch when connected to GitHub.
+# This workflow verifies the codebase is ready and logs deployment notifications.
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-deploy:
+    name: 🚀 Render Auto-Deploy Notification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ✅ Confirm Render Trigger
+        run: |
+          echo "Changes pushed to main branch."
+          echo "Render will automatically build & deploy using Dockerfile!"
+

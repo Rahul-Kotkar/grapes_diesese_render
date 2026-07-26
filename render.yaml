@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: grapes-disease-php
+    env: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: API_KEY
+        value: GPRFarm
+      - key: BACKFILL_SECRET
+        generateValue: true
