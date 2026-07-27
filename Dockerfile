@@ -6,6 +6,8 @@ RUN a2enmod rewrite
 # Install system dependencies, MySQL extensions, and Python 3 ML runtime
 RUN apt-get update && apt-get install -y \
     libpq-dev \
+    git \
+    unzip \
     python3 \
     python3-pip \
     python3-numpy \
