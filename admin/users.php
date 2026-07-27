@@ -166,7 +166,7 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                                         <a href="user_access_log.php?user_id=<?= (int)$u['id'] ?>" class="btn btn-blue" id="access-log-<?= (int)$u['id'] ?>" title="Access Telemetry">
                                             <i class="fa-solid fa-clock-rotate-left"></i> Access
                                         </a>
-                                        <button onclick="openEditModal(<?= (int)$u['id'] ?>, '<?= htmlspecialchars(addslashes($u['username'])) ?>', <?= (int)$u['status'] ?>)" 
+                                        <button onclick="openEditModal(<?= (int)$u['id'] ?>, '<?= htmlspecialchars(addslashes($u['username'])) ?>', '<?= htmlspecialchars(addslashes($u['email'] ?? '')) ?>', <?= (int)$u['status'] ?>)" 
                                                 class="btn btn-secondary" id="edit-modal-btn-<?= (int)$u['id'] ?>" title="Edit User Modal">
                                             <i class="fa-solid fa-pen-to-square"></i> Edit
                                         </button>
@@ -221,6 +221,10 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                     <input type="text" id="modal-username" name="username" required maxlength="100" placeholder="e.g. Farm1">
                 </div>
                 <div class="form-group">
+                    <label for="modal-email">Email (Optional)</label>
+                    <input type="email" id="modal-email" name="email" maxlength="255" placeholder="e.g. farm@example.com">
+                </div>
+                <div class="form-group">
                     <label for="modal-status">Account Status</label>
                     <select id="modal-status" name="status">
                         <option value="0">0 — Active (Access Allowed)</option>
@@ -237,16 +241,18 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
 </div>
 
 <script>
-function openEditModal(id, username, status) {
+function openEditModal(id, username, email, status) {
     const modal = document.getElementById('edit-user-modal');
     const form = document.getElementById('modal-form');
     const usernameInput = document.getElementById('modal-username');
+    const emailInput = document.getElementById('modal-email');
     const statusSelect = document.getElementById('modal-status');
     const avatar = document.getElementById('modal-user-avatar');
     const title = document.getElementById('modal-user-title');
 
     form.action = 'add_user.php?id=' + id;
     usernameInput.value = username;
+    emailInput.value = email;
     statusSelect.value = status;
     avatar.textContent = username.charAt(0).toUpperCase();
     title.textContent = username;
