@@ -10,8 +10,8 @@ use PHPMailer\PHPMailer\Exception;
 
 $sendgridApiKey = getenv('SENDGRID_API_KEY') ?: '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';
 
-if ($sendgridApiKey === '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' || empty($sendgridApiKey)) {
-    die("<h3 style='color:red;'>Please replace the SendGrid API key with your real API key (either set the SENDGRID_API_KEY environment variable on Render, or edit the files)!</h3>");
+if (empty($sendgridApiKey)) {
+    die("<h3 style='color:red;'>Please provide a SendGrid API key!</h3>");
 }
 
 $url = 'https://api.sendgrid.com/v3/mail/send';
