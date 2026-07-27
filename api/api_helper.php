@@ -119,44 +119,51 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     $message .= "- Disease Severity Index (DSI): " . $sensorData['dsi'] . "\n\n";
     $message .= "Please check your dashboard for more information.\n";
     
-    if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-        $mail = new PHPMailer(true);
-        try {
-            // SMTP configuration
-            $mail->isSMTP();
-            $mail->Host       = 'smtp.gmail.com';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = 'rahul.temp66@gmail.com'; // Provided by user
-            $mail->Password   = 'rahul9002'; // Provided by user
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
-            
-            // Force IPv4 to fix "Network is unreachable (101)" on Render
-            $mail->SMTPOptions = array(
-                'socket' => array(
-                    'bindto' => '0.0.0.0:0'
-                )
-            );
-
-            // Sender and recipient
-            $mail->setFrom('rahul.temp66@gmail.com', 'SmartAgri Alerts');
-            $mail->addAddress($to);
-
-            // Content
-            $mail->isHTML(false);
-            $mail->Subject = $subject;
-            $mail->Body    = $message;
-
-            $mail->send();
-        } catch (Exception $e) {
-            // Log error silently
-            error_log("PHPMailer Error: {$mail->ErrorInfo}");
-        }
-    } else {
-        // Fallback to mail() if PHPMailer isn't installed yet
+    // SendGrid API Configuration
+    $sendgridApiKey = 'PUT_YOUR_SENDGRID_API_KEY_HERE'; // Replace this with your actual SendGrid API Key
+    
+    // Fallback to mail() if no API key is provided yet
+    if ($sendgridApiKey === 'PUT_YOUR_SENDGRID_API_KEY_HERE') {
         $headers = "From: no-reply@smartagri.com\r\n";
         $headers .= "Reply-To: no-reply@smartagri.com\r\n";
         $headers .= "X-Mailer: PHP/" . phpversion();
         @mail($to, $subject, $message, $headers);
+        return;
+    }
+
+    $url = 'https://api.sendgrid.com/v3/mail/send';
+    $data = [
+        "personalizations" => [
+            [
+                "to" => [ ["email" => $to] ]
+            ]
+        ],
+        // You MUST verify this sender email in your SendGrid account!
+        "from" => ["email" => 'rahul.temp66@gmail.com', "name" => "SmartAgri Alerts"],
+        "subject" => $subject,
+        "content" => [
+            ["type" => "text/plain", "value" => $message]
+        ]
+    ];
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $sendgridApiKey,
+            'Content-Type: application/json'
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_SSL_VERIFYPEER => false // Render containers sometimes have outdated ca-certs
+    ]);
+
+    $response = curl_exec($ch);
+    $err = curl_error($ch);
+    curl_close($ch);
+    
+    if ($err) {
+        error_log("SendGrid Error: $err");
     }
 }
