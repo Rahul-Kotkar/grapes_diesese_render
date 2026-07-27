@@ -25,11 +25,13 @@
         <div class="topbar-action-icon notification-wrapper" title="Notifications" onclick="toggleNotifications()">
             <i class="fa-regular fa-bell"></i>
             <?php
-            // Fetch recent high risk alerts (last 24 hours)
+            // Fetch recent high risk alerts (last 24 hours) using a fresh connection 
+            // since the main $conn might have been closed by the parent script.
+            $topbarConn = getDBConnection();
             $notifSql = "SELECT created_at, temperature, humidity, dsi FROM sensor_data 
                          WHERE risk_level = 'High' AND created_at >= NOW() - INTERVAL 1 DAY 
                          ORDER BY created_at DESC LIMIT 5";
-            $notifRes = $conn->query($notifSql);
+            $notifRes = $topbarConn->query($notifSql);
             $notifications = [];
             if ($notifRes) {
                 while($n = $notifRes->fetch_assoc()){
