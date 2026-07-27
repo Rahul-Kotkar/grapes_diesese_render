@@ -123,7 +123,7 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     $sendgridApiKey = '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'; // Replace this with your actual SendGrid API Key
     
     // Fallback to mail() if no API key is provided yet
-    if ($sendgridApiKey === 'PUT_YOUR_SENDGRID_API_KEY_HERE') {
+    if ($sendgridApiKey === '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') {
         $headers = "From: no-reply@smartagri.com\r\n";
         $headers .= "Reply-To: no-reply@smartagri.com\r\n";
         $headers .= "X-Mailer: PHP/" . phpversion();
