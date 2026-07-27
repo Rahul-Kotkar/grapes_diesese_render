@@ -121,6 +121,13 @@ $users = [];
 if ($result) {
     $users = $result->fetch_all(MYSQLI_ASSOC);
 }
+
+// Fetch last 15 sensor data rows
+$sensorResult = $conn->query("SELECT id, user_id, temperature, humidity, dsi, risk_level, created_at FROM sensor_data ORDER BY id DESC LIMIT 15");
+$sensors = [];
+if ($sensorResult) {
+    $sensors = $sensorResult->fetch_all(MYSQLI_ASSOC);
+}
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -177,6 +184,48 @@ $conn->close();
                                 <span style="color:#666;">Set email to test</span>
                             <?php endif; ?>
                         </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+
+    <h2 style="margin-top: 50px;">Last 15 Sensor Telemetry Readings</h2>
+    <p>This shows the actual logs submitted by your ESP32 or simulated sensors. Look for rows where Risk Level is "High" to see if they triggered correctly.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Log ID</th>
+                <th>User ID</th>
+                <th>Temperature</th>
+                <th>Humidity</th>
+                <th>DSI</th>
+                <th>Risk Level</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($sensors)): ?>
+                <tr><td colspan="7">No telemetry data found in sensor_data.</td></tr>
+            <?php else: ?>
+                <?php foreach ($sensors as $s): 
+                    $isHigh = (strtolower($s['risk_level'] ?? '') === 'high');
+                    $style = $isHigh ? 'background-color: #fde8e8; font-weight: bold; color: #9b1c1c;' : '';
+                ?>
+                    <tr style="<?= $style ?>">
+                        <td>#<?= (int)$s['id'] ?></td>
+                        <td><?= (int)$s['user_id'] ?></td>
+                        <td><?= (float)$s['temperature'] ?> °C</td>
+                        <td><?= (float)$s['humidity'] ?> %</td>
+                        <td><?= $s['dsi'] === null ? '<em>NULL (Pending ML)</em>' : round((float)$s['dsi'], 4) ?></td>
+                        <td>
+                            <?php if ($s['risk_level'] === null): ?>
+                                <span style="color: #d03803; font-style: italic;">NULL</span>
+                            <?php else: ?>
+                                <?= htmlspecialchars($s['risk_level']) ?>
+                            <?php endif; ?>
+                        </td>
+                        <td><?= htmlspecialchars($s['created_at']) ?></td>
                     </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
