@@ -15,6 +15,9 @@ function formatToIST(?string $dbTime, string $format = 'd-m-Y H:i:s'): string {
 }
 
 $filterUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+if (!isAdmin() && !empty($_SESSION['user_id'])) {
+    $filterUserId = (int)$_SESSION['user_id'];
+}
 
 // ── Pagination ────────────────────────────────────────────────────────────────
 $perPage     = 10;

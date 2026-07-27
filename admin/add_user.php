@@ -5,6 +5,7 @@
  * GET  (no id) → add mode
  */
 require_once 'auth_check.php';
+requireAdmin();
 require_once '../api/config.php';
 
 $conn   = getDBConnection();

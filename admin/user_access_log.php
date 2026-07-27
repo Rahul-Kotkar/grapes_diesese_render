@@ -3,6 +3,7 @@
  * user_access_log.php  —  Per-user sensor access log
  */
 require_once 'auth_check.php';
+requireAdmin();
 require_once '../api/config.php';
 
 $userId = max(0, (int)($_GET['user_id'] ?? 0));

@@ -3,6 +3,7 @@
  * users.php  —  Farm Users Management
  */
 require_once 'auth_check.php';
+requireAdmin();
 require_once '../api/config.php';
 
 $pageTitle = 'Farm Users';

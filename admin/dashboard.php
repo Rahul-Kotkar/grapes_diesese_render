@@ -81,7 +81,7 @@ $count      = count($rows);
             
             <div class="page-header">
                 <div class="page-title-wrap">
-                    <h1 class="page-title">Grape Farm Overview</h1>
+                    <h1 class="page-title"><?= isAdmin() ? 'Grape Farm Overview' : 'Farm Telemetry Overview (' . htmlspecialchars($_SESSION['admin_user']) . ')' ?></h1>
                     <p class="page-subtitle">Real-time IoT sensor telemetry & Ridge ML disease risk predictions (+05:30 IST)</p>
                 </div>
             </div>
@@ -103,6 +103,7 @@ $count      = count($rows);
                     </div>
                 </div>
 
+                <?php if (isAdmin()): ?>
                 <div class="stat-card">
                     <div class="stat-card-header">
                         <span class="stat-card-title">Registered Users</span>
@@ -113,10 +114,26 @@ $count      = count($rows);
                     <div class="stat-card-body">
                         <span class="stat-card-value"><?= number_format($userCount) ?></span>
                         <span class="stat-card-desc">
-                            <span class="trend-badge trend-neutral">Farm Admins</span> Authorized access
+                            <span class="trend-badge trend-neutral">System Admins</span> Authorized access
                         </span>
                     </div>
                 </div>
+                <?php else: ?>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Farm Account</span>
+                        <div class="stat-card-icon icon-blue">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-body">
+                        <span class="stat-card-value"><?= htmlspecialchars($_SESSION['admin_user']) ?></span>
+                        <span class="stat-card-desc">
+                            <span class="trend-badge trend-up"><i class="fa-solid fa-circle-check"></i> Active</span> Connected Node
+                        </span>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <div class="stat-card">
                     <div class="stat-card-header">

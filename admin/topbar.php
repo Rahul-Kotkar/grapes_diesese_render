@@ -64,11 +64,16 @@
 
         <div class="topbar-divider"></div>
 
+        <?php
+        $tbUser = $_SESSION['admin_user'] ?? 'User';
+        $tbAvatar = strtoupper(substr($tbUser, 0, 1));
+        $tbRole = (($_SESSION['user_role'] ?? 'admin') === 'admin') ? 'System Admin' : 'Farmer';
+        ?>
         <div class="topbar-profile">
-            <div class="profile-avatar">A</div>
+            <div class="profile-avatar"><?= htmlspecialchars($tbAvatar) ?></div>
             <div class="profile-details">
-                <span class="profile-name">Admin</span>
-                <span class="profile-status">GPR Farm</span>
+                <span class="profile-name"><?= htmlspecialchars($tbUser) ?></span>
+                <span class="profile-status"><?= htmlspecialchars($tbRole) ?></span>
             </div>
         </div>
     </div>
