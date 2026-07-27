@@ -5,6 +5,15 @@
  * Shared by adddata.php (on sensor insert) and the admin panel.
  */
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Load Composer autoloader (if available)
+$autoloadPath = dirname(__DIR__) . '/vendor/autoload.php';
+if (file_exists($autoloadPath)) {
+    require_once $autoloadPath;
+}
+
 /**
  * Calls the ML prediction model directly (local Python CLI first, then HTTP fallback).
  *
@@ -110,10 +119,37 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     $message .= "- Disease Severity Index (DSI): " . $sensorData['dsi'] . "\n\n";
     $message .= "Please check your dashboard for more information.\n";
     
-    $headers = "From: no-reply@smartagri.com\r\n";
-    $headers .= "Reply-To: no-reply@smartagri.com\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion();
-    
-    // Use @ to suppress mail() errors in case it is disabled on free hosting
-    @mail($to, $subject, $message, $headers);
+    if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+        $mail = new PHPMailer(true);
+        try {
+            // SMTP configuration
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'rahul.temp66@gmail.com'; // Provided by user
+            $mail->Password   = 'rahul9002'; // Provided by user
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            // Sender and recipient
+            $mail->setFrom('rahul.temp66@gmail.com', 'SmartAgri Alerts');
+            $mail->addAddress($to);
+
+            // Content
+            $mail->isHTML(false);
+            $mail->Subject = $subject;
+            $mail->Body    = $message;
+
+            $mail->send();
+        } catch (Exception $e) {
+            // Log error silently
+            error_log("PHPMailer Error: {$mail->ErrorInfo}");
+        }
+    } else {
+        // Fallback to mail() if PHPMailer isn't installed yet
+        $headers = "From: no-reply@smartagri.com\r\n";
+        $headers .= "Reply-To: no-reply@smartagri.com\r\n";
+        $headers .= "X-Mailer: PHP/" . phpversion();
+        @mail($to, $subject, $message, $headers);
+    }
 }

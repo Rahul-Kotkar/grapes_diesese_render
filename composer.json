@@ -1,0 +1,7 @@
+{
+    "name": "rahul/grapes-disease-render",
+    "description": "Smart Agriculture Disease Prediction",
+    "require": {
+        "phpmailer/phpmailer": "^6.8"
+    }
+}

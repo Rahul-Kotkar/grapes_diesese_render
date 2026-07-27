@@ -15,11 +15,17 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy all project files into Apache web root
+# Copy project files
 COPY . /var/www/html/
+
+# Install PHP dependencies (like PHPMailer)
+RUN composer install --no-dev --optimize-autoloader
 
 # Ensure proper permissions
 RUN chown -R www-data:www-data /var/www/html
