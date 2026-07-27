@@ -251,6 +251,7 @@ const tempVals = <?= $tempJson ?>;
 
 if (labels.length > 0) {
     const ctx = document.getElementById('dsiChart').getContext('2d');
+    const isMobile = window.innerWidth <= 576;
     
     // Gradient fill for chart
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -267,14 +268,14 @@ if (labels.length > 0) {
                     data: dsiVals,
                     borderColor: '#16a34a',
                     backgroundColor: gradient,
-                    borderWidth: 2.5,
+                    borderWidth: isMobile ? 2 : 2.5,
                     fill: true,
                     tension: 0.35,
-                    pointRadius: 3,
-                    pointHoverRadius: 6,
+                    pointRadius: isMobile ? 2 : 3,
+                    pointHoverRadius: 5,
                     pointBackgroundColor: '#16a34a',
                     pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
+                    pointBorderWidth: 1.5,
                     yAxisID: 'y'
                 },
                 {
@@ -299,19 +300,20 @@ if (labels.length > 0) {
             },
             plugins: {
                 legend: {
-                    position: 'top',
-                    align: 'end',
+                    position: isMobile ? 'bottom' : 'top',
+                    align: isMobile ? 'center' : 'end',
                     labels: {
-                        font: { family: 'Inter', size: 12, weight: '500' },
+                        font: { family: 'Inter', size: isMobile ? 10.5 : 12, weight: '500' },
                         usePointStyle: true,
-                        boxWidth: 8
+                        boxWidth: 6,
+                        padding: isMobile ? 10 : 15
                     }
                 },
                 tooltip: {
                     backgroundColor: '#111827',
-                    padding: 12,
-                    titleFont: { family: 'Inter', size: 13, weight: '600' },
-                    bodyFont: { family: 'Inter', size: 12 },
+                    padding: isMobile ? 8 : 12,
+                    titleFont: { family: 'Inter', size: 12, weight: '600' },
+                    bodyFont: { family: 'Inter', size: 11 },
                     cornerRadius: 8,
                     displayColors: true
                 }
@@ -319,23 +321,29 @@ if (labels.length > 0) {
             scales: {
                 x: {
                     grid: { color: '#f3f4f6' },
-                    ticks: { font: { family: 'Inter', size: 11 }, color: '#6b7280', maxRotation: 45 }
+                    ticks: {
+                        font: { family: 'Inter', size: isMobile ? 9.5 : 11 },
+                        color: '#6b7280',
+                        maxRotation: isMobile ? 0 : 45,
+                        autoSkip: true,
+                        maxTicksLimit: isMobile ? 6 : 12
+                    }
                 },
                 y: {
                     type: 'linear',
                     display: true,
                     position: 'left',
                     grid: { color: '#f3f4f6' },
-                    ticks: { font: { family: 'Inter', size: 11 }, color: '#6b7280' },
-                    title: { display: true, text: 'DSI Disease Index (%)', font: { family: 'Inter', size: 11 } }
+                    ticks: { font: { family: 'Inter', size: isMobile ? 9.5 : 11 }, color: '#6b7280' },
+                    title: { display: !isMobile, text: 'DSI Index (%)', font: { family: 'Inter', size: 11 } }
                 },
                 y1: {
                     type: 'linear',
                     display: true,
                     position: 'right',
                     grid: { drawOnChartArea: false },
-                    ticks: { font: { family: 'Inter', size: 11 }, color: '#3b82f6' },
-                    title: { display: true, text: 'Temp (°C)', font: { family: 'Inter', size: 11 } }
+                    ticks: { font: { family: 'Inter', size: isMobile ? 9.5 : 11 }, color: '#3b82f6' },
+                    title: { display: !isMobile, text: 'Temp (°C)', font: { family: 'Inter', size: 11 } }
                 }
             }
         }
