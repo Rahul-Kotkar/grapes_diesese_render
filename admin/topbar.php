@@ -22,9 +22,42 @@
             <span id="clock-display">Loading...</span>
         </div>
 
-        <div class="topbar-action-icon" title="Notifications">
+        <div class="topbar-action-icon notification-wrapper" title="Notifications" onclick="toggleNotifications()">
             <i class="fa-regular fa-bell"></i>
-            <span class="notification-dot"></span>
+            <?php
+            // Fetch recent high risk alerts (last 24 hours)
+            $notifSql = "SELECT created_at, temperature, humidity, dsi FROM sensor_data 
+                         WHERE risk_level = 'High' AND created_at >= NOW() - INTERVAL 1 DAY 
+                         ORDER BY created_at DESC LIMIT 5";
+            $notifRes = $conn->query($notifSql);
+            $notifications = [];
+            if ($notifRes) {
+                while($n = $notifRes->fetch_assoc()){
+                    $notifications[] = $n;
+                }
+            }
+            $hasNotifs = count($notifications) > 0;
+            ?>
+            <?php if($hasNotifs): ?>
+                <span class="notification-dot"></span>
+            <?php endif; ?>
+            
+            <div class="notification-dropdown" id="notification-dropdown">
+                <div class="notif-header">High Risk Alerts (24h)</div>
+                <div class="notif-body">
+                    <?php if(!$hasNotifs): ?>
+                        <div class="notif-item" style="text-align:center; color:#999; padding: 15px;">No high risk alerts.</div>
+                    <?php else: ?>
+                        <?php foreach($notifications as $notif): ?>
+                            <div class="notif-item">
+                                <div class="notif-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger-color);"></i> High Disease Risk Detected</div>
+                                <div class="notif-desc">DSI: <b><?= $notif['dsi'] ?></b> | Temp: <?= $notif['temperature'] ?>°C | Hum: <?= $notif['humidity'] ?>%</div>
+                                <div class="notif-time"><?= date('H:i, d M', strtotime($notif['created_at'])) ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
 
         <div class="topbar-divider"></div>
@@ -64,5 +97,19 @@ function toggleSidebar() {
     if (sidebar) sidebar.classList.toggle('open');
     if (overlay) overlay.classList.toggle('show');
 }
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notification-dropdown');
+    if (dropdown) dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const wrapper = document.querySelector('.notification-wrapper');
+    const dropdown = document.getElementById('notification-dropdown');
+    if (wrapper && dropdown && !wrapper.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
 </script>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>

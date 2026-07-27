@@ -36,7 +36,7 @@ if ($incoming === '' || !hash_equals(BACKFILL_SECRET, $incoming)) {
 $conn = getDBConnection();
 
 $stmt = $conn->prepare(
-    "SELECT id, temperature, humidity, sunlight, rainfall, leaf_wetness
+    "SELECT id, user_id, temperature, humidity, sunlight, rainfall, leaf_wetness
      FROM sensor_data
      WHERE dsi IS NULL
      ORDER BY created_at ASC
@@ -96,6 +96,17 @@ foreach ($rows as $row) {
             $upd->bind_param('dsi', $dsi, $riskLevel, $row['id']);
             $upd->execute();
             $upd->close();
+        }
+
+        // ── Notify if high risk ───────────────────────────────────────────────────────
+        if (strtolower($riskLevel) === 'high') {
+            $sensorData = [
+                'temperature'  => (float) $row['temperature'],
+                'humidity'     => (float) $row['humidity'],
+                'leaf_wetness' => (float) $row['leaf_wetness'],
+                'dsi'          => $dsi
+            ];
+            sendHighRiskNotification((int)$row['user_id'], $sensorData);
         }
 
         $results[] = [

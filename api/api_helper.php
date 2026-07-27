@@ -75,3 +75,45 @@ function callMLApi(float $temp, float $rh, float $sunlight, float $rainfall, flo
     $decoded = json_decode($response, true);
     return is_array($decoded) ? $decoded : [];
 }
+
+/**
+ * Sends a notification if the risk level is High.
+ * 
+ * @param int $userId        The ID of the user to notify
+ * @param array $sensorData  Array containing temperature, humidity, leaf_wetness, dsi, risk_level
+ */
+function sendHighRiskNotification(int $userId, array $sensorData): void
+{
+    // Try to get user email
+    $conn = getDBConnection();
+    $stmt = $conn->prepare("SELECT username, email FROM farm_users WHERE id = ?");
+    if (!$stmt) return;
+    
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$user || empty($user['email'])) {
+        return; // No email to send to
+    }
+    
+    $to = $user['email'];
+    $subject = "High Risk Disease Alert for " . $user['username'];
+    
+    $message = "Alert! High disease risk detected by your sensor.\n\n";
+    $message .= "Details:\n";
+    $message .= "- Temperature: " . $sensorData['temperature'] . " °C\n";
+    $message .= "- Humidity: " . $sensorData['humidity'] . " %\n";
+    $message .= "- Leaf Wetness: " . $sensorData['leaf_wetness'] . "\n";
+    $message .= "- Disease Severity Index (DSI): " . $sensorData['dsi'] . "\n\n";
+    $message .= "Please check your dashboard for more information.\n";
+    
+    $headers = "From: no-reply@smartagri.com\r\n";
+    $headers .= "Reply-To: no-reply@smartagri.com\r\n";
+    $headers .= "X-Mailer: PHP/" . phpversion();
+    
+    // Use @ to suppress mail() errors in case it is disabled on free hosting
+    @mail($to, $subject, $message, $headers);
+}

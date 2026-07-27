@@ -128,6 +128,17 @@ if (!empty($mlResult) && isset($mlResult['dsi'], $mlResult['risk_level'])) {
         $upd->execute();
         $upd->close();
     }
+    
+    // ── Notify if high risk ───────────────────────────────────────────────────────
+    if (strtolower($riskLevel) === 'high') {
+        $sensorData = [
+            'temperature'  => $temperature,
+            'humidity'     => $humidity,
+            'leaf_wetness' => $leafWetness,
+            'dsi'          => $dsi
+        ];
+        sendHighRiskNotification($userId, $sensorData);
+    }
 }
 // ❌ ML is sleeping — row stays NULL, backfill picks it up within 10 minutes
 
