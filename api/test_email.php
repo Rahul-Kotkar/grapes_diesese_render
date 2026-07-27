@@ -10,7 +10,7 @@ use PHPMailer\PHPMailer\Exception;
 
 $sendgridApiKey = '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';
 
-if ($sendgridApiKey === 'PUT_YOUR_SENDGRID_API_KEY_HERE') {
+if ($sendgridApiKey === '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') {
     die("<h3 style='color:red;'>Please replace PUT_YOUR_SENDGRID_API_KEY_HERE with your real API key in api_helper.php and test_email.php!</h3>");
 }
 
