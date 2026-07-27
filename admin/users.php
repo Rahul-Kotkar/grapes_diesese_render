@@ -39,7 +39,7 @@ $currentPage  = min($currentPage, $totalPages);
 $offset       = ($currentPage - 1) * $perPage;
 
 // Fetch page
-$sql  = "SELECT id, username, status FROM farm_users $where ORDER BY id ASC LIMIT ? OFFSET ?";
+$sql  = "SELECT id, username, email, status FROM farm_users $where ORDER BY id ASC LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($sql);
 if ($types) {
     $p   = array_merge($params, [$perPage, $offset]);
@@ -141,7 +141,9 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                                             <a href="logs.php?user_id=<?= (int)$u['id'] ?>" class="user-link" style="font-weight:600;font-size:14px;">
                                                 <?= htmlspecialchars($u['username']) ?>
                                             </a>
-                                            <span style="font-size:11px;color:var(--text-muted);">ID: <?= (int)$u['id'] ?></span>
+                                            <?php if (!empty($u['email'])): ?>
+                                                <span style="font-size:12px;color:var(--text-muted);"><i class="fa-solid fa-envelope" style="font-size:10px;"></i> <?= htmlspecialchars($u['email']) ?></span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </td>

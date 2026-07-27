@@ -15,7 +15,7 @@ $pageTitle = $isEdit ? 'Edit User' : 'Add User';
 // Load existing row for edit
 $existing = ['username' => '', 'status' => 0];
 if ($isEdit) {
-    $st = $conn->prepare("SELECT username, status FROM farm_users WHERE id = ?");
+    $st = $conn->prepare("SELECT username, email, status FROM farm_users WHERE id = ?");
     $st->bind_param('i', $editId);
     $st->execute();
     $row = $st->get_result()->fetch_assoc();
@@ -33,6 +33,7 @@ $success = '';
 // ── Handle form submit ────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
     $status   = (int)($_POST['status'] ?? 0);
 
     if ($username === '') {
@@ -41,15 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Username must be 100 characters or fewer.';
     } else {
         if ($isEdit) {
-            $upd = $conn->prepare("UPDATE farm_users SET username = ?, status = ? WHERE id = ?");
-            $upd->bind_param('sii', $username, $status, $editId);
+            $upd = $conn->prepare("UPDATE farm_users SET username = ?, email = ?, status = ? WHERE id = ?");
+            $upd->bind_param('ssii', $username, $email, $status, $editId);
             $upd->execute();
             $upd->close();
             $success = 'User updated successfully.';
-            $existing = ['username' => $username, 'status' => $status];
+            $existing = ['username' => $username, 'email' => $email, 'status' => $status];
         } else {
-            $ins = $conn->prepare("INSERT INTO farm_users (username, status) VALUES (?, ?)");
-            $ins->bind_param('si', $username, $status);
+            $ins = $conn->prepare("INSERT INTO farm_users (username, email, status) VALUES (?, ?, ?)");
+            $ins->bind_param('ssi', $username, $email, $status);
             $ins->execute();
             $ins->close();
             // Redirect to users list after add
@@ -103,8 +104,14 @@ $conn->close();
                     <div class="form-group">
                         <label for="username"><i class="fa-solid fa-user" style="color:var(--text-muted);margin-right:4px;"></i> Username</label>
                         <input type="text" id="username" name="username" required maxlength="100"
-                               value="<?= htmlspecialchars($existing['username']) ?>"
+                               value="<?= htmlspecialchars($existing['username'] ?? '') ?>"
                                placeholder="e.g. Farm1">
+                    </div>
+                    <div class="form-group">
+                        <label for="email"><i class="fa-solid fa-envelope" style="color:var(--text-muted);margin-right:4px;"></i> Email (Optional)</label>
+                        <input type="email" id="email" name="email" maxlength="255"
+                               value="<?= htmlspecialchars($existing['email'] ?? '') ?>"
+                               placeholder="e.g. farm@example.com">
                     </div>
                     <div class="form-group">
                         <label for="status"><i class="fa-solid fa-toggle-on" style="color:var(--text-muted);margin-right:4px;"></i> Account Status</label>
