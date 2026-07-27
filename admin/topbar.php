@@ -113,5 +113,83 @@ document.addEventListener('click', function(event) {
         dropdown.classList.remove('show');
     }
 });
+
+// PWA and Web Push Notification Logic
+(function() {
+    // 1. Inject manifest dynamically so it applies to all pages with topbar
+    if (!document.querySelector('link[rel="manifest"]')) {
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = '/manifest.json';
+        document.head.appendChild(manifestLink);
+    }
+
+    // 2. Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+            console.log('Service Worker registered', reg);
+        }).catch(err => {
+            console.error('Service Worker registration failed', err);
+        });
+    }
+
+    // 3. Request Notification Permission
+    let hasPermission = false;
+    if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+            hasPermission = true;
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                hasPermission = permission === 'granted';
+            });
+        }
+    }
+
+    // 4. Polling for High Risk Alerts
+    let lastAlertId = localStorage.getItem('last_notified_alert_id') || 0;
+    
+    async function pollForAlerts() {
+        if (!hasPermission) return;
+        
+        try {
+            const res = await fetch('/api/get_latest_alert.php?last_id=' + lastAlertId);
+            const data = await res.json();
+            
+            if (data.success && data.alert) {
+                const newAlert = data.alert;
+                
+                // Show native notification
+                if (parseInt(newAlert.id) > parseInt(lastAlertId)) {
+                    lastAlertId = newAlert.id;
+                    localStorage.setItem('last_notified_alert_id', lastAlertId);
+                    
+                    const title = 'High Disease Risk Detected!';
+                    const options = {
+                        body: `DSI: ${newAlert.dsi} | Temp: ${newAlert.temperature}°C | Hum: ${newAlert.humidity}%\nTime: ${newAlert.created_at}`,
+                        icon: '/manifest.json', // Will fallback to default if image isn't right, or we can leave empty
+                        requireInteraction: true
+                    };
+                    
+                    // Show notification (works on desktop and mobile)
+                    const n = new Notification(title, options);
+                    n.onclick = function() {
+                        window.focus();
+                        this.close();
+                    };
+                    
+                    // Also refresh the page if we are on dashboard to show new data
+                    if (window.location.pathname.includes('dashboard.php')) {
+                        // Optional: setTimeout(() => window.location.reload(), 2000);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Polling error', e);
+        }
+    }
+
+    // Poll every 15 seconds
+    setInterval(pollForAlerts, 15000);
+})();
 </script>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
