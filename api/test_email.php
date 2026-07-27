@@ -32,6 +32,13 @@ try {
     $mail->Password   = 'rahul9002'; // If this is a regular password, it will fail
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
+    
+    // Force IPv4 to fix "Network is unreachable (101)" on Render
+    $mail->SMTPOptions = array(
+        'socket' => array(
+            'bindto' => '0.0.0.0:0'
+        )
+    );
 
     $mail->setFrom('rahul.temp66@gmail.com', 'SmartAgri Test');
     // Send it to the same address for testing

@@ -130,6 +130,13 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
             $mail->Password   = 'rahul9002'; // Provided by user
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
+            
+            // Force IPv4 to fix "Network is unreachable (101)" on Render
+            $mail->SMTPOptions = array(
+                'socket' => array(
+                    'bindto' => '0.0.0.0:0'
+                )
+            );
 
             // Sender and recipient
             $mail->setFrom('rahul.temp66@gmail.com', 'SmartAgri Alerts');
