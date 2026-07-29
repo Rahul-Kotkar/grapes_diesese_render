@@ -257,7 +257,7 @@ function riskClass(string $risk): string {
                                     <div class="risk-progress-wrap" title="DSI: <?= number_format((float)$r['dsi'], 4) ?> | Risk: <?= htmlspecialchars($riskLevel) ?>">
                                         <div class="risk-progress-header">
                                             <span style="font-weight:700;color:var(--text-main);"><?= htmlspecialchars($riskLevel) ?> Risk</span>
-                                            <span style="color:var(--text-muted);"><?= $dsiVal ?>% (DSI: <?= $dsiVal ?>)</span>
+                                            <span style="color:var(--text-muted);"><?= $dsiVal ?>% (DSI: <?= round((float)$r['dsi'] / 100, 2) ?>)</span>
                                         </div>
                                         <div class="risk-bar-container">
                                             <div class="risk-bar-fill <?= $fillClass ?>" style="width: <?= $percentage ?>%;"></div>

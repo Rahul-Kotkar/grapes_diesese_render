@@ -155,7 +155,7 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
                 
                 <table class="data-table">
                     <tr><td>Risk Level:</td><td><span class="badge-high">⚠️ ' . htmlspecialchars($sensorData['risk_level'] ?? 'High') . ' Risk</span></td></tr>
-                    <tr><td>Disease Severity (DSI):</td><td><strong>' . round((float)($sensorData['dsi'] ?? 0), 2) . '% (DSI: ' . round((float)($sensorData['dsi'] ?? 0), 2) . ')</strong></td></tr>
+                    <tr><td>Disease Severity (DSI):</td><td><strong>' . round((float)($sensorData['dsi'] ?? 0), 2) . '% (DSI: ' . round((float)($sensorData['dsi'] ?? 0) / 100, 2) . ')</strong></td></tr>
                     <tr><td>Temperature:</td><td>' . htmlspecialchars($sensorData['temperature']) . ' °C</td></tr>
                     <tr><td>Humidity (RH):</td><td>' . htmlspecialchars($sensorData['humidity']) . ' %</td></tr>
                     <tr><td>Leaf Wetness:</td><td>' . htmlspecialchars($sensorData['leaf_wetness']) . '</td></tr>

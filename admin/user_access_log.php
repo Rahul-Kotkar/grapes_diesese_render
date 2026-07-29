@@ -204,7 +204,7 @@ function palUrl(int $p, int $uid): string {
                                     <div class="risk-progress-wrap">
                                         <div class="risk-progress-header">
                                             <span style="font-weight:700;"><?= htmlspecialchars($riskLevel) ?> Risk</span>
-                                            <span><?= $dsiVal ?>% (DSI: <?= $dsiVal ?>)</span>
+                                            <span><?= $dsiVal ?>% (DSI: <?= round((float)$r['dsi'] / 100, 2) ?>)</span>
                                         </div>
                                         <div class="risk-bar-container">
                                             <div class="risk-bar-fill <?= $fillClass ?>" style="width: <?= $percentage ?>%;"></div>

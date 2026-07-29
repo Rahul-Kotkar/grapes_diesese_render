@@ -201,7 +201,7 @@ $count      = count($rows);
                                     </div>
                                 </div>
                                 <span class="<?= $badgeClass ?>">
-                                    <?= htmlspecialchars($feed['risk_level'] ?? 'N/A') ?> (<?= round((float)$feed['dsi'], 1) ?>% | DSI: <?= round((float)$feed['dsi'], 1) ?>)
+                                    <?= htmlspecialchars($feed['risk_level'] ?? 'N/A') ?> (<?= round((float)$feed['dsi'], 1) ?>% | DSI: <?= round((float)$feed['dsi'] / 100, 2) ?>)
                                 </span>
                             </div>
                             <?php endforeach; ?>
