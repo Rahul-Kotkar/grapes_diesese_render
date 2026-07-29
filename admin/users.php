@@ -118,13 +118,12 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                             <tr>
                                 <th>User ID</th>
                                 <th>User Details</th>
-                                <th>Account Status</th>
                                 <th style="text-align:right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                         <?php if (empty($users)): ?>
-                            <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:32px;">No users found matching your query.</td></tr>
+                            <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:32px;">No users found matching your query.</td></tr>
                         <?php else: ?>
                             <?php foreach ($users as $u): 
                                 $statusActive = ((int)$u['status'] === 0);
@@ -148,24 +147,10 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <?php if ($statusActive): ?>
-                                    <span class="badge badge-active">
-                                        <span class="status-dot"></span> Active
-                                    </span>
-                                    <?php else: ?>
-                                    <span class="badge badge-inactive">
-                                        <span class="status-dot" style="background:#ef4444;"></span> Inactive
-                                    </span>
-                                    <?php endif; ?>
-                                </td>
                                 <td style="text-align:right;">
                                     <div style="display:flex;gap:6px;justify-content:flex-end;">
                                         <a href="logs.php?user_id=<?= (int)$u['id'] ?>" class="btn btn-green" id="view-logs-<?= (int)$u['id'] ?>" title="View Sensor Logs">
                                             <i class="fa-solid fa-list-check"></i> Logs
-                                        </a>
-                                        <a href="user_access_log.php?user_id=<?= (int)$u['id'] ?>" class="btn btn-blue" id="access-log-<?= (int)$u['id'] ?>" title="Access Telemetry">
-                                            <i class="fa-solid fa-clock-rotate-left"></i> Access
                                         </a>
                                         <button onclick="openEditModal(<?= (int)$u['id'] ?>, '<?= htmlspecialchars(addslashes($u['username'])) ?>', '<?= htmlspecialchars(addslashes($u['email'] ?? '')) ?>', <?= (int)$u['status'] ?>)" 
                                                 class="btn btn-secondary" id="edit-modal-btn-<?= (int)$u['id'] ?>" title="Edit User Modal">

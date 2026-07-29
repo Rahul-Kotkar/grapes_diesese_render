@@ -87,14 +87,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="POST" id="login-form">
             <div class="form-group">
                 <label for="username"><i class="fa-regular fa-user" style="margin-right:4px;"></i> Username / Email</label>
-                <input type="text" id="username" name="username" placeholder="e.g. ridge@grapes.com"
+                <input type="text" id="username" name="username"
                        required autocomplete="username"
                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
             </div>
             <div class="form-group">
                 <label for="password"><i class="fa-solid fa-lock" style="margin-right:4px;"></i> Password</label>
-                <input type="password" id="password" name="password"
-                       placeholder="••••••••" required autocomplete="current-password">
+                <input type="password" id="password" name="password" required autocomplete="current-password">
             </div>
             <button type="submit" class="btn-login-submit" id="login-btn">
                 Sign In to Portal <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
