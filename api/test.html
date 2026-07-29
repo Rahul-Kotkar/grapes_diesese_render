@@ -159,11 +159,11 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn-mock" onclick="runTest('mock')">🧪 Test API Endpoint</button>
+      <button class="btn-mock" style="background:#3182ce;color:#ffffff;" onclick="runTest()">🚀 Test & Ingest API Data (Saves to DB)</button>
     </div>
 
-    <div class="url-box" id="urlBox">← click the button to generate and test the URL</div>
-    <div class="spinner" id="spinner">⏳ Waiting for response...</div>
+    <div class="url-box" id="urlBox">← click the button to send test telemetry to database</div>
+    <div class="spinner" id="spinner">⏳ Waiting for server response...</div>
     <div class="result" id="result"></div>
     <div class="info-row" id="infoRow"></div>
   </div>
@@ -191,8 +191,8 @@ function buildUrl(endpoint) {
   return `${base}?${qs}`;
 }
 
-async function runTest(mode) {
-  const endpoint = mode === 'mock' ? 'mockdata' : 'adddata';
+async function runTest() {
+  const endpoint = 'adddata';
   const url      = buildUrl(endpoint);
 
   document.getElementById('urlBox').textContent = url;
