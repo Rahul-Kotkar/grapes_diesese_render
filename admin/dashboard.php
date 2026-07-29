@@ -90,53 +90,6 @@ $count      = count($rows);
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-card-header">
-                        <span class="stat-card-title">Total Active Devices</span>
-                        <div class="stat-card-icon icon-emerald">
-                            <i class="fa-solid fa-microchip"></i>
-                        </div>
-                    </div>
-                    <div class="stat-card-body">
-                        <span class="stat-card-value">1 Device</span>
-                        <span class="stat-card-desc">
-                            <span class="trend-badge trend-up"><i class="fa-solid fa-signal"></i> Online</span> ESP32 Gateway
-                        </span>
-                    </div>
-                </div>
-
-                <?php if (isAdmin()): ?>
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <span class="stat-card-title">Registered Users</span>
-                        <div class="stat-card-icon icon-blue">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                    </div>
-                    <div class="stat-card-body">
-                        <span class="stat-card-value"><?= number_format($userCount) ?></span>
-                        <span class="stat-card-desc">
-                            <span class="trend-badge trend-neutral">System Admins</span> Authorized access
-                        </span>
-                    </div>
-                </div>
-                <?php else: ?>
-                <div class="stat-card">
-                    <div class="stat-card-header">
-                        <span class="stat-card-title">Farm Account</span>
-                        <div class="stat-card-icon icon-blue">
-                            <i class="fa-solid fa-user-check"></i>
-                        </div>
-                    </div>
-                    <div class="stat-card-body">
-                        <span class="stat-card-value"><?= htmlspecialchars($_SESSION['admin_user']) ?></span>
-                        <span class="stat-card-desc">
-                            <span class="trend-badge trend-up"><i class="fa-solid fa-circle-check"></i> Active</span> Connected Node
-                        </span>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <div class="stat-card">
-                    <div class="stat-card-header">
                         <span class="stat-card-title">Total Sensor Data</span>
                         <div class="stat-card-icon icon-purple">
                             <i class="fa-solid fa-database"></i>
@@ -248,7 +201,7 @@ $count      = count($rows);
                                     </div>
                                 </div>
                                 <span class="<?= $badgeClass ?>">
-                                    <?= htmlspecialchars($feed['risk_level'] ?? 'N/A') ?> (<?= round((float)$feed['dsi'], 1) ?>%)
+                                    <?= htmlspecialchars($feed['risk_level'] ?? 'N/A') ?> (<?= round((float)$feed['dsi'], 1) ?>% | DSI: <?= round((float)$feed['dsi'], 1) ?>)
                                 </span>
                             </div>
                             <?php endforeach; ?>

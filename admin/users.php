@@ -151,11 +151,11 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                                 <td>
                                     <?php if ($statusActive): ?>
                                     <span class="badge badge-active">
-                                        <span class="status-dot"></span> Active (0)
+                                        <span class="status-dot"></span> Active
                                     </span>
                                     <?php else: ?>
                                     <span class="badge badge-inactive">
-                                        <span class="status-dot" style="background:#ef4444;"></span> Inactive (1)
+                                        <span class="status-dot" style="background:#ef4444;"></span> Inactive
                                     </span>
                                     <?php endif; ?>
                                 </td>
@@ -228,8 +228,8 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                 <div class="form-group">
                     <label for="modal-status">Account Status</label>
                     <select id="modal-status" name="status">
-                        <option value="0">0 — Active (Access Allowed)</option>
-                        <option value="1">1 — Inactive (Access Restricted)</option>
+                        <option value="0">Active (Access Allowed)</option>
+                        <option value="1">Inactive (Access Restricted)</option>
                     </select>
                 </div>
             </div>

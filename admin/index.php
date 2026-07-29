@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
 
     // 1. System Administrator Login
-    if (strtolower($username) === 'admin' && $password === 'admin123') {
+    if ((strtolower($username) === 'ridge@grapes.com' || strtolower($username) === 'admin') && ($password === 'ridge$123' || $password === 'admin123')) {
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['user_role']       = 'admin';
         $_SESSION['admin_user']      = 'Administrator';
@@ -86,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="POST" id="login-form">
             <div class="form-group">
-                <label for="username"><i class="fa-regular fa-user" style="margin-right:4px;"></i> Username</label>
-                <input type="text" id="username" name="username" placeholder="e.g. admin or Farm1"
+                <label for="username"><i class="fa-regular fa-user" style="margin-right:4px;"></i> Username / Email</label>
+                <input type="text" id="username" name="username" placeholder="e.g. ridge@grapes.com"
                        required autocomplete="username"
                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
             </div>
@@ -100,12 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 Sign In to Portal <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
             </button>
         </form>
-
-        <div style="margin-top:16px;padding:12px;background:var(--bg-main);border-radius:var(--radius-md);font-size:12px;color:var(--text-muted);text-align:center;">
-            <span style="font-weight:600;display:block;margin-bottom:4px;color:var(--text-main);">Demo Accounts:</span>
-            🔑 <strong>Admin:</strong> admin / admin123<br>
-            🌾 <strong>Farmer:</strong> Farm1 / farm123
-        </div>
     </div>
 </body>
 </html>

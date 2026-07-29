@@ -117,8 +117,8 @@ $conn->close();
                     <div class="form-group">
                         <label for="status"><i class="fa-solid fa-toggle-on" style="color:var(--text-muted);margin-right:4px;"></i> Account Status</label>
                         <select id="status" name="status">
-                            <option value="0" <?= (int)$existing['status'] === 0 ? 'selected' : '' ?>>0 — Active (Access Allowed)</option>
-                            <option value="1" <?= (int)$existing['status'] === 1 ? 'selected' : '' ?>>1 — Inactive (Access Restricted)</option>
+                            <option value="0" <?= (int)$existing['status'] === 0 ? 'selected' : '' ?>>Active (Access Allowed)</option>
+                            <option value="1" <?= (int)$existing['status'] === 1 ? 'selected' : '' ?>>Inactive (Access Restricted)</option>
                         </select>
                     </div>
                     <div class="form-actions">

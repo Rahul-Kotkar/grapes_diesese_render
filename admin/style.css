@@ -1662,3 +1662,60 @@ body.login-body {
         font-size: 10.5px;
     }
 }
+
+/* Range Export Card Radio Styling */
+.range-option-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    background-color: var(--bg-main);
+    transition: var(--transition);
+}
+
+.range-option-card:hover {
+    border-color: var(--primary);
+    background-color: #ffffff;
+}
+
+.range-option-card input[type="radio"] {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    accent-color: var(--primary);
+    width: 16px;
+    height: 16px;
+}
+
+.range-option-card:has(input:checked) {
+    border-color: var(--primary);
+    background-color: #f0fdf4;
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.range-option-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.range-option-content i {
+    font-size: 20px;
+    color: var(--primary);
+}
+
+.range-option-content strong {
+    display: block;
+    font-size: 13px;
+    color: var(--text-main);
+}
+
+.range-option-content span {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+

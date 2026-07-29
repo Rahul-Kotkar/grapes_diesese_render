@@ -159,26 +159,13 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn-mock" onclick="runTest('mock')">🧪 Test MOCK (no DB)</button>
-      <button class="btn-real" onclick="runTest('real')">💾 Test REAL API (saves to DB)</button>
+      <button class="btn-mock" onclick="runTest('mock')">🧪 Test API Endpoint</button>
     </div>
 
-    <div class="url-box" id="urlBox">← click a button to generate the URL</div>
+    <div class="url-box" id="urlBox">← click the button to generate and test the URL</div>
     <div class="spinner" id="spinner">⏳ Waiting for response...</div>
     <div class="result" id="result"></div>
     <div class="info-row" id="infoRow"></div>
-  </div>
-
-  <!-- Quick Links -->
-  <div class="card">
-    <h2>🔗 Quick Test URLs <span class="badge badge-mock">MOCK</span></h2>
-    <div class="url-box">
-      http://levetech.infinityfree.io/grapesml/api/mockdata?key=GPRFarm&temp=20&rh=90&sunlight=6&user_id=2&rainfall=2&leafw=3.2
-    </div>
-    <h2 style="margin-top:16px">🔗 Real API URL <span class="badge badge-real">LIVE</span></h2>
-    <div class="url-box">
-      http://levetech.infinityfree.io/grapesml/api/adddata?key=GPRFarm&temp=20&rh=90&sunlight=6&user_id=2&rainfall=2&leafw=3.2
-    </div>
   </div>
 
 </div>
@@ -199,7 +186,8 @@ function buildParams() {
 function buildUrl(endpoint) {
   const p   = buildParams();
   const qs  = Object.entries(p).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
-  const base = window.location.origin + '/grapesml/api/' + endpoint;
+  const dir = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+  const base = window.location.origin + dir + '/' + endpoint + '.php';
   return `${base}?${qs}`;
 }
 

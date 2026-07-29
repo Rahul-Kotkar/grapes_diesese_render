@@ -44,16 +44,42 @@ $totalPages  = max(1, (int)ceil($totalRecords / $perPage));
 $currentPage = min($currentPage, $totalPages);
 $offset      = ($currentPage - 1) * $perPage;
 
+$userFilterFallback = false;
+
 // Fetch
-$stmt = $conn->prepare(
-    "SELECT created_at, temperature, humidity, sunlight, rainfall, leaf_wetness, dsi, risk_level
-     FROM sensor_data WHERE user_id = ?
-     ORDER BY created_at DESC LIMIT ? OFFSET ?"
-);
-$stmt->bind_param('iii', $userId, $perPage, $offset);
-$stmt->execute();
-$rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+if ($totalRecords > 0) {
+    $stmt = $conn->prepare(
+        "SELECT created_at, temperature, humidity, sunlight, rainfall, leaf_wetness, dsi, risk_level
+         FROM sensor_data WHERE user_id = ?
+         ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    );
+    $stmt->bind_param('iii', $userId, $perPage, $offset);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+} else {
+    // Fallback: If specific user has 0 records, load system telemetry logs
+    $totalSys = (int)($conn->query("SELECT COUNT(*) FROM sensor_data")->fetch_row()[0] ?? 0);
+    if ($totalSys > 0) {
+        $userFilterFallback = true;
+        $totalRecords = $totalSys;
+        $totalPages   = max(1, (int)ceil($totalRecords / $perPage));
+        $currentPage  = min($currentPage, $totalPages);
+        $offset       = ($currentPage - 1) * $perPage;
+
+        $stmt = $conn->prepare(
+            "SELECT created_at, temperature, humidity, sunlight, rainfall, leaf_wetness, dsi, risk_level
+             FROM sensor_data
+             ORDER BY created_at DESC LIMIT ? OFFSET ?"
+        );
+        $stmt->bind_param('ii', $perPage, $offset);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    } else {
+        $rows = [];
+    }
+}
 $conn->close();
 
 function riskClassAL(string $risk): string {
@@ -94,6 +120,15 @@ function palUrl(int $p, int $uid): string {
                 </a>
             </div>
 
+            <?php if ($userFilterFallback): ?>
+            <div class="alert" style="margin-bottom:20px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;padding:12px 16px;border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
+                <i class="fa-solid fa-circle-info" style="font-size:18px;color:#3b82f6;"></i>
+                <span style="font-size:13px;font-weight:500;">
+                    <strong>Notice:</strong> No specific sensor telemetry records registered for <strong><?= $username ?></strong> (User #<?= $userId ?>). Displaying all available system sensor telemetry logs below.
+                </span>
+            </div>
+            <?php endif; ?>
+
             <!-- Card Table Container -->
             <div class="card-table-container">
                 <div class="toolbar">
@@ -101,6 +136,11 @@ function palUrl(int $p, int $uid): string {
                         <span style="font-size:13px;font-weight:600;color:var(--text-main);">
                             Showing Telemetry Log History for <strong><?= $username ?></strong> (IST +05:30)
                         </span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn btn-secondary" onclick="openExportModal()" id="btn-export-csv">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
                     </div>
                 </div>
 
@@ -164,7 +204,7 @@ function palUrl(int $p, int $uid): string {
                                     <div class="risk-progress-wrap">
                                         <div class="risk-progress-header">
                                             <span style="font-weight:700;"><?= htmlspecialchars($riskLevel) ?> Risk</span>
-                                            <span><?= $dsiVal ?>%</span>
+                                            <span><?= $dsiVal ?>% (DSI: <?= $dsiVal ?>)</span>
                                         </div>
                                         <div class="risk-bar-container">
                                             <div class="risk-bar-fill <?= $fillClass ?>" style="width: <?= $percentage ?>%;"></div>
@@ -204,5 +244,87 @@ function palUrl(int $p, int $uid): string {
         </div>
     </div>
 </div>
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-file-csv" style="color:var(--primary);margin-right:8px;"></i> Export Telemetry Logs (CSV)</h3>
+            <button class="modal-close-btn" onclick="closeExportModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                Select the time duration range for exported sensor telemetry readings for <strong><?= $username ?></strong>:
+            </p>
+            <form action="export_logs.php" method="GET" target="_blank" onsubmit="setTimeout(closeExportModal, 500)">
+                <input type="hidden" name="user_id" value="<?= $userId ?>">
+
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="font-weight:600;font-size:13px;margin-bottom:10px;display:block;">Select Date Range:</label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="all" checked>
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-globe"></i>
+                                <div>
+                                    <strong>All Data</strong>
+                                    <span>Entire telemetry history</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="this_month">
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-calendar-day"></i>
+                                <div>
+                                    <strong>This Month</strong>
+                                    <span>Current month records</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="6_months">
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-calendar-week"></i>
+                                <div>
+                                    <strong>6 Months</strong>
+                                    <span>Past 6 months records</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="year">
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-calendar"></i>
+                                <div>
+                                    <strong>1 Year</strong>
+                                    <span>Past 365 days records</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="padding:16px 0 0 0;background:transparent;border:none;">
+                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openExportModal() {
+    document.getElementById('exportModal').classList.add('show');
+}
+function closeExportModal() {
+    document.getElementById('exportModal').classList.remove('show');
+}
+document.getElementById('exportModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeExportModal();
+});
+</script>
 </body>
 </html>

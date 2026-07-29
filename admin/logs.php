@@ -19,6 +19,24 @@ if (!isAdmin() && !empty($_SESSION['user_id'])) {
     $filterUserId = (int)$_SESSION['user_id'];
 }
 
+$requestedUserId = $filterUserId;
+$userFilterFallback = false;
+
+if ($filterUserId > 0) {
+    $cntCheck = $conn->prepare("SELECT COUNT(*) FROM sensor_data WHERE user_id = ?");
+    if ($cntCheck) {
+        $cntCheck->bind_param('i', $filterUserId);
+        $cntCheck->execute();
+        $userCnt = (int)$cntCheck->get_result()->fetch_row()[0];
+        $cntCheck->close();
+    }
+    if ($userCnt === 0) {
+        // Fallback: If requested user_id has 0 records, clear filter so query returns all logs
+        $userFilterFallback = true;
+        $filterUserId = 0;
+    }
+}
+
 // ── Pagination ────────────────────────────────────────────────────────────────
 $perPage     = 10;
 $currentPage = max(1, (int)($_GET['page'] ?? 1));
@@ -132,6 +150,15 @@ function riskClass(string $risk): string {
                 </div>
             </div>
 
+            <?php if ($userFilterFallback && $requestedUserId > 0): ?>
+            <div class="alert" style="margin-bottom:20px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;padding:12px 16px;border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
+                <i class="fa-solid fa-circle-info" style="font-size:18px;color:#3b82f6;"></i>
+                <span style="font-size:13px;font-weight:500;">
+                    <strong>Notice:</strong> User #<?= $requestedUserId ?> has no specific sensor telemetry records registered. Displaying all available system sensor telemetry logs below.
+                </span>
+            </div>
+            <?php endif; ?>
+
             <!-- Card Table Container -->
             <div class="card-table-container">
                 <!-- Toolbar -->
@@ -163,7 +190,7 @@ function riskClass(string $risk): string {
                         <?php if ($filterUserId): ?>
                         <a href="logs.php" class="btn btn-secondary" style="font-size:12px;">← View All Users Logs</a>
                         <?php endif; ?>
-                        <button class="btn btn-secondary" onclick="exportLogsCSV()" id="btn-export-csv">
+                        <button class="btn btn-secondary" onclick="openExportModal()" id="btn-export-csv">
                             <i class="fa-solid fa-file-csv"></i> Export CSV
                         </button>
                     </div>
@@ -230,7 +257,7 @@ function riskClass(string $risk): string {
                                     <div class="risk-progress-wrap" title="DSI: <?= number_format((float)$r['dsi'], 4) ?> | Risk: <?= htmlspecialchars($riskLevel) ?>">
                                         <div class="risk-progress-header">
                                             <span style="font-weight:700;color:var(--text-main);"><?= htmlspecialchars($riskLevel) ?> Risk</span>
-                                            <span style="color:var(--text-muted);"><?= $dsiVal ?>%</span>
+                                            <span style="color:var(--text-muted);"><?= $dsiVal ?>% (DSI: <?= $dsiVal ?>)</span>
                                         </div>
                                         <div class="risk-bar-container">
                                             <div class="risk-bar-fill <?= $fillClass ?>" style="width: <?= $percentage ?>%;"></div>
@@ -278,21 +305,94 @@ function riskClass(string $risk): string {
     </div>
 </div>
 
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-file-csv" style="color:var(--primary);margin-right:8px;"></i> Export Telemetry Logs (CSV)</h3>
+            <button class="modal-close-btn" onclick="closeExportModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                Select the time duration range for exported sensor telemetry readings:
+            </p>
+            <form action="export_logs.php" method="GET" target="_blank" onsubmit="setTimeout(closeExportModal, 500)">
+                <?php if ($filterUserId): ?>
+                <input type="hidden" name="user_id" value="<?= $filterUserId ?>">
+                <?php endif; ?>
+                <?php if (!empty($searchTerm)): ?>
+                <input type="hidden" name="q" value="<?= htmlspecialchars($searchTerm) ?>">
+                <input type="hidden" name="search_by" value="<?= htmlspecialchars($searchField) ?>">
+                <?php endif; ?>
+
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="font-weight:600;font-size:13px;margin-bottom:10px;display:block;">Select Date Range:</label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="all" checked>
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-globe"></i>
+                                <div>
+                                    <strong>All Data</strong>
+                                    <span>Entire telemetry history</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="this_month">
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-calendar-day"></i>
+                                <div>
+                                    <strong>This Month</strong>
+                                    <span>Current month records</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="6_months">
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-calendar-week"></i>
+                                <div>
+                                    <strong>6 Months</strong>
+                                    <span>Past 6 months records</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="range-option-card">
+                            <input type="radio" name="range" value="year">
+                            <div class="range-option-content">
+                                <i class="fa-solid fa-calendar"></i>
+                                <div>
+                                    <strong>1 Year</strong>
+                                    <span>Past 365 days records</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="padding:16px 0 0 0;background:transparent;border:none;">
+                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-function exportLogsCSV() {
-    const table = document.getElementById('logs-table');
-    let csv = [];
-    for (let row of table.rows) {
-        let cols = Array.from(row.cells).map(c => '"' + c.innerText.trim().replace(/"/g, '""') + '"');
-        csv.push(cols.join(','));
-    }
-    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'sensor_telemetry_logs.csv';
-    a.click();
+function openExportModal() {
+    document.getElementById('exportModal').classList.add('show');
 }
+function closeExportModal() {
+    document.getElementById('exportModal').classList.remove('show');
+}
+// Close modal if user clicks backdrop
+document.getElementById('exportModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeExportModal();
+});
 </script>
 </body>
 </html>
