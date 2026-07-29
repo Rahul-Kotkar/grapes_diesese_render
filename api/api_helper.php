@@ -93,31 +93,63 @@ function callMLApi(float $temp, float $rh, float $sunlight, float $rainfall, flo
  */
 function sendHighRiskNotification(int $userId, array $sensorData): void
 {
-    // Try to get user email
     $conn = getDBConnection();
+    
+    // 1. Collect all notification recipients (Farm User + System Admin)
+    $recipients = [];
+    $addedEmails = [];
+
+    // Target Farm User
     $stmt = $conn->prepare("SELECT username, email FROM farm_users WHERE id = ?");
-    if (!$stmt) return;
-    
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $stmt->close();
-    
-    if (!$user || empty($user['email'])) {
-        return; // No email to send to
+    $targetUser = null;
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $targetUser = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+    }
+
+    if ($targetUser && !empty($targetUser['email']) && filter_var($targetUser['email'], FILTER_VALIDATE_EMAIL)) {
+        $recipients[] = ["email" => $targetUser['email'], "name" => $targetUser['username']];
+        $addedEmails[] = strtolower($targetUser['email']);
+    }
+
+    // System Admin (User ID 1 or admin accounts in farm_users)
+    $adminRes = $conn->query("SELECT username, email FROM farm_users WHERE id = 1 OR LOWER(username) LIKE '%admin%'");
+    if ($adminRes) {
+        while ($adminRow = $adminRes->fetch_assoc()) {
+            if (!empty($adminRow['email']) && filter_var($adminRow['email'], FILTER_VALIDATE_EMAIL) && !in_array(strtolower($adminRow['email']), $addedEmails)) {
+                $recipients[] = ["email" => $adminRow['email'], "name" => "System Admin (" . $adminRow['username'] . ")"];
+                $addedEmails[] = strtolower($adminRow['email']);
+            }
+        }
+    }
+
+    // Fallback Admin Email (ridge@grapes.com or ADMIN_NOTIFICATION_EMAIL)
+    $defaultAdminEmail = getenv('ADMIN_NOTIFICATION_EMAIL') ?: 'ridge@grapes.com';
+    if (!empty($defaultAdminEmail) && filter_var($defaultAdminEmail, FILTER_VALIDATE_EMAIL) && !in_array(strtolower($defaultAdminEmail), $addedEmails)) {
+        $recipients[] = ["email" => $defaultAdminEmail, "name" => "System Administrator"];
+        $addedEmails[] = strtolower($defaultAdminEmail);
+    }
+
+    // If no recipients, abort
+    if (empty($recipients)) {
+        return;
     }
     
-    $to = $user['email'];
-    $subject = "High Risk Disease Alert for " . $user['username'] . " (DSI: " . round((float)($sensorData['dsi'] ?? 0), 1) . "%)";
+    $farmName = $targetUser['username'] ?? "Farm User #$userId";
+    $dsiPct   = round((float)($sensorData['dsi'] ?? 0), 2);
+    $dsiPts   = round((float)($sensorData['dsi'] ?? 0) / 100, 2);
+
+    $subject = "⚠️ High Risk Disease Alert for " . $farmName . " (DSI: " . $dsiPct . "%)";
     
     $plainMessage = "SmartAgri Disease Risk Alert\n\n";
-    $plainMessage .= "High grape disease risk detected for farm account: " . $user['username'] . "\n\n";
+    $plainMessage .= "High grape disease risk detected for farm account: " . $farmName . "\n\n";
     $plainMessage .= "Telemetry Details:\n";
     $plainMessage .= "- Temperature: " . $sensorData['temperature'] . " °C\n";
     $plainMessage .= "- Humidity: " . $sensorData['humidity'] . " %\n";
     $plainMessage .= "- Leaf Wetness: " . $sensorData['leaf_wetness'] . "\n";
-    $plainMessage .= "- Disease Severity Index (DSI): " . round((float)($sensorData['dsi'] ?? 0), 2) . "%\n";
+    $plainMessage .= "- Disease Severity Index (DSI): " . $dsiPct . "% (DSI: " . $dsiPts . ")\n";
     $plainMessage .= "- Risk Level: " . htmlspecialchars($sensorData['risk_level'] ?? 'High') . "\n\n";
     $plainMessage .= "Please log into your farm dashboard for recommendations.\n";
 
@@ -150,23 +182,24 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
                 <p>Smart Agriculture IoT Monitoring System</p>
             </div>
             <div class="email-body">
-                <p style="font-size:14px;margin-top:0;">Hello <strong>' . htmlspecialchars($user['username']) . '</strong>,</p>
+                <p style="font-size:14px;margin-top:0;">Hello <strong>' . htmlspecialchars($farmName) . ' & Admin Team</strong>,</p>
                 <p style="font-size:13.5px;color:#4b5563;">High fungal disease risk detected based on real-time IoT sensor telemetry:</p>
                 
                 <table class="data-table">
+                    <tr><td>Farm Account:</td><td><strong>' . htmlspecialchars($farmName) . '</strong></td></tr>
                     <tr><td>Risk Level:</td><td><span class="badge-high">⚠️ ' . htmlspecialchars($sensorData['risk_level'] ?? 'High') . ' Risk</span></td></tr>
-                    <tr><td>Disease Severity (DSI):</td><td><strong>' . round((float)($sensorData['dsi'] ?? 0), 2) . '% (DSI: ' . round((float)($sensorData['dsi'] ?? 0) / 100, 2) . ')</strong></td></tr>
+                    <tr><td>Disease Severity (DSI):</td><td><strong>' . $dsiPct . '% (DSI: ' . $dsiPts . ')</strong></td></tr>
                     <tr><td>Temperature:</td><td>' . htmlspecialchars($sensorData['temperature']) . ' °C</td></tr>
                     <tr><td>Humidity (RH):</td><td>' . htmlspecialchars($sensorData['humidity']) . ' %</td></tr>
                     <tr><td>Leaf Wetness:</td><td>' . htmlspecialchars($sensorData['leaf_wetness']) . '</td></tr>
                 </table>
 
                 <div style="text-align:center;">
-                    <a href="https://grapes-diesese_render.onrender.com/admin/" class="btn-action">Open Farm Dashboard →</a>
+                    <a href="https://grapes-diesese-render.onrender.com/admin/" class="btn-action">Open Farm Dashboard →</a>
                 </div>
             </div>
             <div class="email-footer">
-                This is an automated notification from your GPR Farm Monitoring Gateway.<br>
+                This is an automated notification sent to both Farm Owners and System Administrators.<br>
                 Please do not reply to this email directly.
             </div>
         </div>
@@ -184,7 +217,9 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
         $headers .= "MIME-Version: 1.0\r\n";
         $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
         $headers .= "X-Mailer: PHP/" . phpversion();
-        @mail($to, $subject, $htmlMessage, $headers);
+        foreach ($recipients as $recipient) {
+            @mail($recipient['email'], $subject, $htmlMessage, $headers);
+        }
         return;
     }
 
@@ -192,7 +227,7 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     $data = [
         "personalizations" => [
             [
-                "to" => [ ["email" => $to, "name" => $user['username']] ]
+                "to" => $recipients
             ]
         ],
         "from" => ["email" => $senderEmail, "name" => "SmartAgri Alerts"],
