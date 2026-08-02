@@ -20,7 +20,7 @@ $totalRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data")->fetch_ro
 $todayRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data WHERE DATE(created_at) = CURDATE()")->fetch_row()[0] ?? 0);
 
 $avgDsiRow = $conn->query("SELECT AVG(dsi) FROM sensor_data WHERE dsi IS NOT NULL")->fetch_row();
-$avgDsi = ($avgDsiRow && $avgDsiRow[0] !== null) ? round((float)$avgDsiRow[0], 2) : 'N/A';
+$avgDsi = ($avgDsiRow && $avgDsiRow[0] !== null) ? sprintf("%.6f", (float)$avgDsiRow[0] / 100) : 'N/A';
 
 $lastSyncRow = $conn->query("SELECT MAX(created_at) FROM sensor_data")->fetch_row();
 $lastSync = formatToIST($lastSyncRow[0] ?? null, 'H:i:s, d M');
@@ -53,7 +53,7 @@ $tempVals  = [];
 
 foreach ($chartRows as $r) {
     $labels[]   = formatToIST($r['created_at'], 'd/m H:i');
-    $dsiVals[]  = round((float)$r['dsi'], 2);
+    $dsiVals[]  = (float)sprintf("%.6f", (float)$r['dsi'] / 100);
     $tempVals[] = round((float)$r['temperature'], 1);
 }
 
@@ -111,7 +111,7 @@ $count      = count($rows);
                         </div>
                     </div>
                     <div class="stat-card-body">
-                        <span class="stat-card-value"><?= $avgDsi ?>%</span>
+                        <span class="stat-card-value"><?= $avgDsi ?></span>
                         <span class="stat-card-desc">
                             <span class="trend-badge trend-neutral">ML Severity</span> Ridge Model Output
                         </span>
@@ -201,7 +201,7 @@ $count      = count($rows);
                                     </div>
                                 </div>
                                 <span class="<?= $badgeClass ?>">
-                                    <?= htmlspecialchars($feed['risk_level'] ?? 'N/A') ?> (<?= round((float)$feed['dsi'], 1) ?>% | DSI: <?= round((float)$feed['dsi'] / 100, 2) ?>)
+                                    <?= htmlspecialchars($feed['risk_level'] ?? 'N/A') ?> (DSI: <?= sprintf("%.6f", (float)$feed['dsi'] / 100) ?>)
                                 </span>
                             </div>
                             <?php endforeach; ?>

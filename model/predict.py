@@ -42,7 +42,7 @@ def main():
             risk_level = "High"
 
         result = {
-            "dsi": round(dsi, 4),
+            "dsi": dsi,
             "risk_level": risk_level
         }
 

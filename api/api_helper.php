@@ -138,10 +138,9 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     }
     
     $farmName = $targetUser['username'] ?? "Farm User #$userId";
-    $dsiPct   = round((float)($sensorData['dsi'] ?? 0), 2);
-    $dsiPts   = round((float)($sensorData['dsi'] ?? 0) / 100, 2);
+    $rawDsi   = sprintf("%.6f", (float)($sensorData['dsi'] ?? 0) / 100);
 
-    $subject = "⚠️ High Risk Disease Alert for " . $farmName . " (DSI: " . $dsiPct . "%)";
+    $subject = "⚠️ High Risk Disease Alert for " . $farmName . " (DSI: " . $rawDsi . ")";
     
     $plainMessage = "SmartAgri Disease Risk Alert\n\n";
     $plainMessage .= "High grape disease risk detected for farm account: " . $farmName . "\n\n";
@@ -149,7 +148,7 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     $plainMessage .= "- Temperature: " . $sensorData['temperature'] . " °C\n";
     $plainMessage .= "- Humidity: " . $sensorData['humidity'] . " %\n";
     $plainMessage .= "- Leaf Wetness: " . $sensorData['leaf_wetness'] . "\n";
-    $plainMessage .= "- Disease Severity Index (DSI): " . $dsiPct . "% (DSI: " . $dsiPts . ")\n";
+    $plainMessage .= "- Disease Severity Index (DSI): " . $rawDsi . "\n";
     $plainMessage .= "- Risk Level: " . htmlspecialchars($sensorData['risk_level'] ?? 'High') . "\n\n";
     $plainMessage .= "Please log into your farm dashboard for recommendations.\n";
 
@@ -188,7 +187,7 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
                 <table class="data-table">
                     <tr><td>Farm Account:</td><td><strong>' . htmlspecialchars($farmName) . '</strong></td></tr>
                     <tr><td>Risk Level:</td><td><span class="badge-high">⚠️ ' . htmlspecialchars($sensorData['risk_level'] ?? 'High') . ' Risk</span></td></tr>
-                    <tr><td>Disease Severity (DSI):</td><td><strong>' . $dsiPct . '% (DSI: ' . $dsiPts . ')</strong></td></tr>
+                    <tr><td>Disease Severity (DSI):</td><td><strong>' . htmlspecialchars($rawDsi) . '</strong></td></tr>
                     <tr><td>Temperature:</td><td>' . htmlspecialchars($sensorData['temperature']) . ' °C</td></tr>
                     <tr><td>Humidity (RH):</td><td>' . htmlspecialchars($sensorData['humidity']) . ' %</td></tr>
                     <tr><td>Leaf Wetness:</td><td>' . htmlspecialchars($sensorData['leaf_wetness']) . '</td></tr>

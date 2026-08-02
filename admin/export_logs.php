@@ -117,7 +117,6 @@ fputcsv($output, [
     'Sunlight (hrs)',
     'Rainfall (mm)',
     'Leaf Wetness',
-    'DSI Index (%)',
     'DSI Value',
     'Risk Level'
 ]);
@@ -125,8 +124,7 @@ fputcsv($output, [
 // Write Rows
 foreach ($rows as $r) {
     $formattedTime = !empty($r['created_at']) ? date('d-m-Y H:i:s', strtotime($r['created_at'])) : 'N/A';
-    $dsiVal = $r['dsi'] !== null ? round((float)$r['dsi'], 2) : 'N/A';
-    $dsiExact = $r['dsi'] !== null ? number_format((float)$r['dsi'], 4) : 'N/A';
+    $dsiVal = $r['dsi'] !== null ? sprintf("%.6f", (float)$r['dsi'] / 100) : 'N/A';
 
     fputcsv($output, [
         $r['id'],
@@ -137,8 +135,7 @@ foreach ($rows as $r) {
         $r['sunlight'],
         $r['rainfall'],
         $r['leaf_wetness'],
-        $dsiVal !== 'N/A' ? $dsiVal . '%' : 'N/A',
-        $dsiVal !== 'N/A' ? $dsiVal : 'N/A',
+        $dsiVal,
         $r['risk_level'] ?? 'N/A'
     ]);
 }

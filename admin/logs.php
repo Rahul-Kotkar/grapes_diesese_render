@@ -215,10 +215,10 @@ function riskClass(string $risk): string {
                             <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No sensor telemetry records found.</td></tr>
                         <?php else: ?>
                             <?php foreach ($rows as $r): 
-                                $dsiVal = $r['dsi'] !== null ? round((float)$r['dsi'], 2) : null;
+                                $dsiScaled = $r['dsi'] !== null ? sprintf("%.6f", (float)$r['dsi'] / 100) : null;
                                 $riskLevel = $r['risk_level'] ?? 'N/A';
                                 $fillClass = riskClass($riskLevel);
-                                $percentage = $dsiVal !== null ? min(100, max(0, $dsiVal)) : 0;
+                                $percentage = $r['dsi'] !== null ? min(100, max(0, (float)$r['dsi'])) : 0;
                             ?>
                             <tr>
                                 <td>
@@ -253,11 +253,11 @@ function riskClass(string $risk): string {
                                     </span>
                                 </td>
                                 <td>
-                                    <?php if ($dsiVal !== null): ?>
-                                    <div class="risk-progress-wrap" title="DSI: <?= number_format((float)$r['dsi'], 4) ?> | Risk: <?= htmlspecialchars($riskLevel) ?>">
+                                    <?php if ($dsiScaled !== null): ?>
+                                    <div class="risk-progress-wrap" title="DSI: <?= htmlspecialchars($dsiScaled) ?> | Risk: <?= htmlspecialchars($riskLevel) ?>">
                                         <div class="risk-progress-header">
                                             <span style="font-weight:700;color:var(--text-main);"><?= htmlspecialchars($riskLevel) ?> Risk</span>
-                                            <span style="color:var(--text-muted);"><?= $dsiVal ?>% (DSI: <?= round((float)$r['dsi'] / 100, 2) ?>)</span>
+                                            <span style="color:var(--text-muted);font-weight:600;"><?= htmlspecialchars($dsiScaled) ?></span>
                                         </div>
                                         <div class="risk-bar-container">
                                             <div class="risk-bar-fill <?= $fillClass ?>" style="width: <?= $percentage ?>%;"></div>
