@@ -16,14 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    // 1. System Administrator Login
-    if (strtolower($username) === 'ridge@grapes.com' && $password === 'ridge$123') {
+    // 1. System Administrator Login (Only improved@grapes.com / improved$123 allowed)
+    if (strtolower($username) === 'improved@grapes.com' && $password === 'improved$123') {
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['user_role']       = 'admin';
         $_SESSION['admin_user']      = 'Administrator';
         $_SESSION['user_id']         = 1;
         header('Location: dashboard.php');
         exit();
+    } elseif (in_array(strtolower($username), ['admin', 'ridge@grapes.com'])) {
+        $error = 'Invalid username or password.';
     } else {
         // 2. Farmer Account Login (Check farm_users database table)
         $conn = getDBConnection();
