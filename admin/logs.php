@@ -140,7 +140,7 @@ function riskClass(string $risk): string {
 
             <div class="page-header">
                 <div class="page-title-wrap">
-                    <h1 class="page-title">Sensor Telemetry & Disease Risk Logs<?= $filterUserId ? ' (User #' . $filterUserId . ')' : '' ?></h1>
+                    <h1 class="page-title">Sensor Telemetry & Disease Risk Logs</h1>
                     <p class="page-subtitle">Real-time IoT sensor readings in IST (+05:30) with Improved ML severity predictions</p>
                 </div>
                 <div style="display:flex;gap:10px;">
@@ -157,7 +157,7 @@ function riskClass(string $risk): string {
             <div class="alert" style="margin-bottom:20px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;padding:12px 16px;border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
                 <i class="fa-solid fa-circle-info" style="font-size:18px;color:#3b82f6;"></i>
                 <span style="font-size:13px;font-weight:500;">
-                    <strong>Notice:</strong> User #<?= $requestedUserId ?> has no specific sensor telemetry records registered. Displaying all available system sensor telemetry logs below.
+                    <strong>Notice:</strong> This account currently has no specific sensor telemetry records registered. Displaying all available system sensor telemetry logs below.
                 </span>
             </div>
             <?php endif; ?>
