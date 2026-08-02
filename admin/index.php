@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
 
     // 1. System Administrator Login
-    if ((strtolower($username) === 'improved@grapes.com' || strtolower($username) === 'ridge@grapes.com' || strtolower($username) === 'admin') && ($password === 'improved$123' || $password === 'ridge$123' || $password === 'admin123')) {
+    if (strtolower($username) === 'ridge@grapes.com' && $password === 'ridge$123') {
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['user_role']       = 'admin';
         $_SESSION['admin_user']      = 'Administrator';
