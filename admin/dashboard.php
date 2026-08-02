@@ -19,7 +19,7 @@ $userCount = (int)($conn->query("SELECT COUNT(*) FROM farm_users")->fetch_row()[
 $totalRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data")->fetch_row()[0] ?? 0);
 $todayRecords = (int)($conn->query("SELECT COUNT(*) FROM sensor_data WHERE DATE(created_at) = CURDATE()")->fetch_row()[0] ?? 0);
 
-$avgDsiRow = $conn->query("SELECT AVG(dsi) FROM sensor_data WHERE dsi IS NOT NULL")->fetch_row();
+$avgDsiRow = $conn->query("SELECT AVG(dsi) FROM sensor_data WHERE dsi IS NOT NULL AND DATE(created_at) = CURDATE() - INTERVAL 1 DAY")->fetch_row();
 $avgDsi = ($avgDsiRow && $avgDsiRow[0] !== null) ? sprintf("%.6f", (float)$avgDsiRow[0] / 100) : 'N/A';
 
 $lastSyncRow = $conn->query("SELECT MAX(created_at) FROM sensor_data")->fetch_row();
@@ -105,7 +105,7 @@ $count      = count($rows);
 
                 <div class="stat-card">
                     <div class="stat-card-header">
-                        <span class="stat-card-title">Avg Disease Risk (DSI)</span>
+                        <span class="stat-card-title">Yesterday's Avg DSI Risk</span>
                         <div class="stat-card-icon icon-amber">
                             <i class="fa-solid fa-triangle-exclamation"></i>
                         </div>
@@ -113,7 +113,7 @@ $count      = count($rows);
                     <div class="stat-card-body">
                         <span class="stat-card-value"><?= $avgDsi ?></span>
                         <span class="stat-card-desc">
-                            <span class="trend-badge trend-neutral">ML Severity</span> Ridge Model Output
+                            <span class="trend-badge trend-neutral">Yesterday's Avg</span> IST Telemetry
                         </span>
                     </div>
                 </div>
