@@ -205,7 +205,7 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
                     <tr><td>Temperature:</td><td>' . htmlspecialchars($sensorData['temperature']) . ' °C</td></tr>
                     <tr><td>Humidity (RH):</td><td>' . htmlspecialchars($sensorData['humidity']) . ' %</td></tr>
                     <tr><td>Leaf Wetness:</td><td>' . htmlspecialchars($sensorData['leaf_wetness']) . '</td></tr>
-                </table>';
+                </table>
 
                 <div style="text-align:center;">
                     <a href="https://grapes-diesese-render.onrender.com/admin/" class="btn-action">Open Farm Dashboard →</a>
