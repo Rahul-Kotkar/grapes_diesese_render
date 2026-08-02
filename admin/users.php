@@ -79,9 +79,12 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                     <h1 class="page-title">Farm Users Management</h1>
                     <p class="page-subtitle">Manage registered farm user accounts, status, and sensor telemetry logs</p>
                 </div>
+                <!-- Hidden Add User Button (Functionality disabled/hidden as per request) -->
+                <!--
                 <a href="add_user.php" class="btn btn-primary" id="btn-add-user">
                     <i class="fa-solid fa-plus"></i> Add New User
                 </a>
+                -->
             </div>
 
             <!-- Card Table Wrapper -->
