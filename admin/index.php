@@ -24,38 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_id']         = 1;
         header('Location: dashboard');
         exit();
-    } elseif (in_array(strtolower($username), ['admin', 'ridge@grapes.com'])) {
-        $error = 'Invalid username or password.';
+    } 
+    // 2. Farmer Account Login (Only farmer@grapes.com / farmer$123 allowed)
+    elseif (strtolower($username) === 'farmer@grapes.com' && $password === 'farmer$123') {
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['user_role']       = 'farmer';
+        $_SESSION['admin_user']      = 'Farm User';
+        $_SESSION['user_id']         = 2;
+        header('Location: dashboard');
+        exit();
     } else {
-        // 2. Farmer Account Login (Check farm_users database table)
-        $conn = getDBConnection();
-        $stmt = $conn->prepare("SELECT id, username, status FROM farm_users WHERE LOWER(username) = LOWER(?) LIMIT 1");
-        if ($stmt) {
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $userRow = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
-
-            if ($userRow) {
-                if ((int)$userRow['status'] === 1) {
-                    $error = 'Account is inactive. Please contact the System Admin.';
-                } else {
-                    // Accepts standard passwords for farm user accounts (e.g. farm123, password123, or farm name)
-                    $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['user_role']       = 'farmer';
-                    $_SESSION['admin_user']      = $userRow['username'];
-                    $_SESSION['user_id']         = (int)$userRow['id'];
-                    $conn->close();
-                    header('Location: dashboard');
-                    exit();
-                }
-            } else {
-                $error = 'Invalid username or password.';
-            }
-        } else {
-            $error = 'Database connection error. Please try again.';
-        }
-        $conn->close();
+        $error = 'Invalid username or password.';
     }
 }
 ?>
