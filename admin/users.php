@@ -55,7 +55,7 @@ $conn->close();
 
 function pageUrl(int $p, string $q = '', string $by = 'username'): string {
     $qs = http_build_query(array_filter(['page' => $p, 'q' => $q, 'search_by' => $by]));
-    return 'users.php?' . $qs;
+    return 'users?' . $qs;
 }
 ?>
 <!DOCTYPE html>
@@ -141,7 +141,7 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                                             <?= strtoupper(substr($u['username'], 0, 1)) ?>
                                         </div>
                                         <div style="display:flex;flex-direction:column;">
-                                            <a href="logs.php?user_id=<?= (int)$u['id'] ?>" class="user-link" style="font-weight:600;font-size:14px;">
+                                            <a href="logs?user_id=<?= (int)$u['id'] ?>" class="user-link" style="font-weight:600;font-size:14px;">
                                                 <?= htmlspecialchars($u['username']) ?>
                                             </a>
                                             <?php if (!empty($u['email'])): ?>
@@ -152,7 +152,7 @@ function pageUrl(int $p, string $q = '', string $by = 'username'): string {
                                 </td>
                                 <td style="text-align:right;">
                                     <div style="display:flex;gap:6px;justify-content:flex-end;">
-                                        <a href="logs.php?user_id=<?= (int)$u['id'] ?>" class="btn btn-green" id="view-logs-<?= (int)$u['id'] ?>" title="View Sensor Logs">
+                                        <a href="logs?user_id=<?= (int)$u['id'] ?>" class="btn btn-green" id="view-logs-<?= (int)$u['id'] ?>" title="View Sensor Logs">
                                             <i class="fa-solid fa-list-check"></i> Logs
                                         </a>
                                         <button onclick="openEditModal(<?= (int)$u['id'] ?>, '<?= htmlspecialchars(addslashes($u['username'])) ?>', '<?= htmlspecialchars(addslashes($u['email'] ?? '')) ?>', <?= (int)$u['status'] ?>)" 

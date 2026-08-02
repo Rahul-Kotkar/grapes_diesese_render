@@ -175,7 +175,7 @@ $count      = count($rows);
                 <div class="activity-card">
                     <div class="activity-header">
                         <h2 class="chart-title">Recent Telemetry Feed</h2>
-                        <a href="logs.php" style="font-size:12px;font-weight:600;color:var(--primary);">View All →</a>
+                        <a href="logs" style="font-size:12px;font-weight:600;color:var(--primary);">View All →</a>
                     </div>
                     <div class="activity-list">
                         <?php if (empty($recentFeed)): ?>

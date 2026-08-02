@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /admin/
+
+    # Direct /admin/ to /admin/index if requested
+    DirectoryIndex index.php
+
+    # 1. Redirect external .php URLs to extensionless URLs
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/admin/([^.]+)\.php[\s?] [NC]
+    RewriteRule ^ %1 [R=301,L]
+
+    # 2. Rewrite extensionless URLs internally to .php
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.*?)/?$ $1.php [L]
+</IfModule>

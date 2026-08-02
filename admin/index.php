@@ -7,7 +7,7 @@ require_once '../api/config.php';
 
 // Already logged in → go to dashboard
 if (!empty($_SESSION['admin_logged_in'])) {
-    header('Location: dashboard.php');
+    header('Location: dashboard');
     exit();
 }
 
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_role']       = 'admin';
         $_SESSION['admin_user']      = 'Administrator';
         $_SESSION['user_id']         = 1;
-        header('Location: dashboard.php');
+        header('Location: dashboard');
         exit();
     } elseif (in_array(strtolower($username), ['admin', 'ridge@grapes.com'])) {
         $error = 'Invalid username or password.';
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['admin_user']      = $userRow['username'];
                     $_SESSION['user_id']         = (int)$userRow['id'];
                     $conn->close();
-                    header('Location: dashboard.php');
+                    header('Location: dashboard');
                     exit();
                 }
             } else {

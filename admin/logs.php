@@ -99,7 +99,7 @@ $conn->close();
 
 function pageUrl2(int $p, int $uid, string $q, string $by): string {
     $qs = http_build_query(array_filter(['page' => $p, 'user_id' => $uid ?: null, 'q' => $q, 'search_by' => $by]));
-    return 'logs.php?' . $qs;
+    return 'logs?' . $qs;
 }
 
 function riskClass(string $risk): string {
@@ -191,7 +191,7 @@ function riskClass(string $risk): string {
 
                     <div class="toolbar-right">
                         <?php if ($filterUserId): ?>
-                        <a href="logs.php" class="btn btn-secondary" style="font-size:12px;">← View All Users Logs</a>
+                        <a href="logs" class="btn btn-secondary" style="font-size:12px;">← View All Users Logs</a>
                         <?php endif; ?>
                         <button class="btn btn-secondary" onclick="openExportModal()" id="btn-export-csv">
                             <i class="fa-solid fa-file-csv"></i> Export CSV

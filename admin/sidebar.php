@@ -29,20 +29,20 @@ $userRoleTitle = $isUserAdmin ? 'System Admin' : 'Farm Account';
     <nav class="sidebar-nav">
         <div class="nav-section">
             <span class="nav-section-title">MAIN MENU</span>
-            <a href="dashboard.php" class="nav-link <?= $current === 'dashboard' ? 'active' : '' ?>">
+            <a href="dashboard" class="nav-link <?= $current === 'dashboard' ? 'active' : '' ?>">
                 <i class="fa-solid fa-chart-line nav-icon"></i>
                 <span class="nav-label">Dashboard</span>
             </a>
 
             <?php if ($isUserAdmin): ?>
             <!-- Admin Only Navigation -->
-            <a href="users.php" class="nav-link <?= ($current === 'users' || $current === 'add_user' || $current === 'user_access_log') ? 'active' : '' ?>">
+            <a href="users" class="nav-link <?= ($current === 'users' || $current === 'add_user' || $current === 'user_access_log') ? 'active' : '' ?>">
                 <i class="fa-solid fa-users nav-icon"></i>
                 <span class="nav-label">Farm Users</span>
             </a>
             <?php endif; ?>
 
-            <a href="logs.php" class="nav-link <?= $current === 'logs' ? 'active' : '' ?>">
+            <a href="logs" class="nav-link <?= $current === 'logs' ? 'active' : '' ?>">
                 <i class="fa-solid fa-microchip nav-icon"></i>
                 <span class="nav-label">Sensor Logs</span>
             </a>
@@ -57,7 +57,7 @@ $userRoleTitle = $isUserAdmin ? 'System Admin' : 'Farm Account';
                 <span class="nav-tag">Live</span>
             </a>
             <?php endif; ?>
-            <a href="logout.php" class="nav-link nav-logout">
+            <a href="logout" class="nav-link nav-logout">
                 <i class="fa-solid fa-arrow-right-from-bracket nav-icon"></i>
                 <span class="nav-label">Logout</span>
             </a>

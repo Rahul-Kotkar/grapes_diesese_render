@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 if (empty($_SESSION['admin_logged_in'])) {
-    header('Location: index.php');
+    header('Location: index');
     exit();
 }
 
@@ -23,7 +23,7 @@ function isAdmin(): bool {
  */
 function requireAdmin(): void {
     if (!isAdmin()) {
-        header('Location: dashboard.php');
+        header('Location: dashboard');
         exit();
     }
 }
