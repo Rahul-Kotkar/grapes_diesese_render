@@ -138,7 +138,7 @@ function riskClass(string $risk): string {
             <div class="page-header">
                 <div class="page-title-wrap">
                     <h1 class="page-title">Sensor Telemetry & Disease Risk Logs<?= $filterUserId ? ' (User #' . $filterUserId . ')' : '' ?></h1>
-                    <p class="page-subtitle">Real-time IoT sensor readings in IST (+05:30) with Ridge ML severity predictions</p>
+                    <p class="page-subtitle">Real-time IoT sensor readings in IST (+05:30) with Improved ML severity predictions</p>
                 </div>
                 <div style="display:flex;gap:10px;">
                     <button class="btn btn-secondary" onclick="window.location.reload()" title="Refresh Logs">

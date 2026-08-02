@@ -125,8 +125,8 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
         }
     }
 
-    // Fallback Admin Email (ridge@grapes.com or ADMIN_NOTIFICATION_EMAIL)
-    $defaultAdminEmail = getenv('ADMIN_NOTIFICATION_EMAIL') ?: 'ridge@grapes.com';
+    // Fallback Admin Email (improved@grapes.com or ADMIN_NOTIFICATION_EMAIL)
+    $defaultAdminEmail = getenv('ADMIN_NOTIFICATION_EMAIL') ?: 'improved@grapes.com';
     if (!empty($defaultAdminEmail) && filter_var($defaultAdminEmail, FILTER_VALIDATE_EMAIL) && !in_array(strtolower($defaultAdminEmail), $addedEmails)) {
         $recipients[] = ["email" => $defaultAdminEmail, "name" => "System Administrator"];
         $addedEmails[] = strtolower($defaultAdminEmail);

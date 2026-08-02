@@ -82,7 +82,7 @@ $count      = count($rows);
             <div class="page-header">
                 <div class="page-title-wrap">
                     <h1 class="page-title"><?= isAdmin() ? 'Grape Farm Overview' : 'Farm Telemetry Overview (' . htmlspecialchars($_SESSION['admin_user']) . ')' ?></h1>
-                    <p class="page-subtitle">Real-time IoT sensor telemetry & Ridge ML disease risk predictions (+05:30 IST)</p>
+                    <p class="page-subtitle">Real-time IoT sensor telemetry & Improved ML disease risk predictions (+05:30 IST)</p>
                 </div>
             </div>
 
