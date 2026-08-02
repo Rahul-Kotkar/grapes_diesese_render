@@ -137,20 +137,34 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
         return;
     }
     
-    $farmName = $targetUser['username'] ?? "Farm User #$userId";
-    $rawDsi   = sprintf("%.6f", (float)($sensorData['dsi'] ?? 0) / 100);
+    $farmName  = $targetUser['username'] ?? "Farm User #$userId";
+    $rawDsi    = sprintf("%.6f", (float)($sensorData['dsi'] ?? 0) / 100);
+    $riskLevel = trim($sensorData['risk_level'] ?? 'High');
+    $isVeryHigh = (strtolower($riskLevel) === 'very high' || strtolower($riskLevel) === 'very high (action required)');
 
-    $subject = "⚠️ High Risk Disease Alert for " . $farmName . " (DSI: " . $rawDsi . ")";
+    if ($isVeryHigh) {
+        $subject     = "🚨 CRITICAL ALERT: Very High Disease Risk for " . $farmName . " (DSI: " . $rawDsi . ")";
+        $headerTitle = "🚨 CRITICAL: Very High Disease Risk Alert";
+        $headerBg    = "linear-gradient(135deg, #dc2626, #991b1b)";
+        $alertDesc   = "CRITICAL fungal disease risk detected (Action Required)! Immediate intervention recommended:";
+        $badgeMarkup = '<span class="badge-high" style="background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;font-weight:700;">🚨 ' . htmlspecialchars($riskLevel) . ' (Action Required)</span>';
+    } else {
+        $subject     = "⚠️ High Risk Disease Alert for " . $farmName . " (DSI: " . $rawDsi . ")";
+        $headerTitle = "⚠️ High Disease Risk Alert";
+        $headerBg    = "linear-gradient(135deg, #ef4444, #dc2626)";
+        $alertDesc   = "High fungal disease risk detected based on real-time IoT sensor telemetry:";
+        $badgeMarkup = '<span class="badge-high">⚠️ ' . htmlspecialchars($riskLevel) . ' (Alert)</span>';
+    }
     
     $plainMessage = "SmartAgri Disease Risk Alert\n\n";
-    $plainMessage .= "High grape disease risk detected for farm account: " . $farmName . "\n\n";
+    $plainMessage .= ($isVeryHigh ? "CRITICAL (Action Required)" : "High") . " grape disease risk detected for farm account: " . $farmName . "\n\n";
     $plainMessage .= "Telemetry Details:\n";
     $plainMessage .= "- Temperature: " . $sensorData['temperature'] . " °C\n";
     $plainMessage .= "- Humidity: " . $sensorData['humidity'] . " %\n";
     $plainMessage .= "- Leaf Wetness: " . $sensorData['leaf_wetness'] . "\n";
     $plainMessage .= "- Disease Severity Index (DSI): " . $rawDsi . "\n";
-    $plainMessage .= "- Risk Level: " . htmlspecialchars($sensorData['risk_level'] ?? 'High') . "\n\n";
-    $plainMessage .= "Please log into your farm dashboard for recommendations.\n";
+    $plainMessage .= "- Risk Level: " . htmlspecialchars($riskLevel) . "\n\n";
+    $plainMessage .= "Please log into your farm dashboard immediately for recommendations.\n";
 
     // Clean HTML email template to prevent email providers from marking as SPAM
     $htmlMessage = '
@@ -161,7 +175,7 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
         <style>
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; color: #111827; }
             .email-card { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-            .email-header { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 24px; text-align: center; color: #ffffff; }
+            .email-header { background: ' . $headerBg . '; padding: 24px; text-align: center; color: #ffffff; }
             .email-header h2 { margin: 0; font-size: 20px; font-weight: 700; }
             .email-header p { margin: 6px 0 0 0; font-size: 13px; opacity: 0.9; }
             .email-body { padding: 24px; }
@@ -177,21 +191,21 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     <body>
         <div class="email-card">
             <div class="email-header">
-                <h2>⚠️ High Disease Risk Alert</h2>
+                <h2>' . htmlspecialchars($headerTitle) . '</h2>
                 <p>Smart Agriculture IoT Monitoring System</p>
             </div>
             <div class="email-body">
                 <p style="font-size:14px;margin-top:0;">Hello <strong>' . htmlspecialchars($farmName) . ' & Admin Team</strong>,</p>
-                <p style="font-size:13.5px;color:#4b5563;">High fungal disease risk detected based on real-time IoT sensor telemetry:</p>
+                <p style="font-size:13.5px;color:#4b5563;">' . htmlspecialchars($alertDesc) . '</p>
                 
                 <table class="data-table">
                     <tr><td>Farm Account:</td><td><strong>' . htmlspecialchars($farmName) . '</strong></td></tr>
-                    <tr><td>Risk Level:</td><td><span class="badge-high">⚠️ ' . htmlspecialchars($sensorData['risk_level'] ?? 'High') . ' Risk</span></td></tr>
+                    <tr><td>Risk Level:</td><td>' . $badgeMarkup . '</td></tr>
                     <tr><td>Disease Severity (DSI):</td><td><strong>' . htmlspecialchars($rawDsi) . '</strong></td></tr>
                     <tr><td>Temperature:</td><td>' . htmlspecialchars($sensorData['temperature']) . ' °C</td></tr>
                     <tr><td>Humidity (RH):</td><td>' . htmlspecialchars($sensorData['humidity']) . ' %</td></tr>
                     <tr><td>Leaf Wetness:</td><td>' . htmlspecialchars($sensorData['leaf_wetness']) . '</td></tr>
-                </table>
+                </table>';
 
                 <div style="text-align:center;">
                     <a href="https://grapes-diesese-render.onrender.com/admin/" class="btn-action">Open Farm Dashboard →</a>
