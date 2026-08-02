@@ -31,10 +31,8 @@ CREATE TABLE IF NOT EXISTS `farm_users` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Seed default admin & farm users
+-- 3. Seed default farm users (Farm1 and farm2)
 INSERT INTO `farm_users` (`username`, `status`) VALUES
-  ('Admin', 0),
   ('Farm1', 0),
-  ('farm2', 0),
-  ('Test',  0)
+  ('farm2', 0)
 ON DUPLICATE KEY UPDATE `username`=`username`;

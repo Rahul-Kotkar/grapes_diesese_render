@@ -13,9 +13,7 @@ CREATE TABLE IF NOT EXISTS `farm_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Farm users managed via the admin panel';
 
--- Seed default users matching the screenshots
+-- Seed default users (Farm1 and farm2)
 INSERT INTO `farm_users` (`username`, `status`) VALUES
-  ('Admin',           0),
   ('Farm1',           0),
-  ('farm2',           0),
-  ('Test',            0);
+  ('farm2',           0);
