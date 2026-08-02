@@ -129,8 +129,8 @@ if (!empty($mlResult) && isset($mlResult['dsi'], $mlResult['risk_level'])) {
         $upd->close();
     }
     
-    // ── Notify if high risk ───────────────────────────────────────────────────────
-    if (strtolower($riskLevel) === 'high') {
+    // ── Notify if high / very high risk ──────────────────────────────────────────
+    if (in_array(strtolower(trim($riskLevel)), ['high', 'very high', 'high (alert)', 'very high (action required)'])) {
         $sensorData = [
             'temperature'  => $temperature,
             'humidity'     => $humidity,

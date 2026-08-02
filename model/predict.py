@@ -29,21 +29,29 @@ def main():
         model      = joblib.load(MODEL_PATH)
         thresholds = joblib.load(THRESHOLD_PATH)
 
-        theta1 = float(thresholds.get("theta1", 25.84))
-        theta2 = float(thresholds.get("theta2", 31.93))
+        theta1 = float(thresholds.get("theta1", 25.97))
+        theta2 = float(thresholds.get("theta2", 32.04))
+        theta3 = float(thresholds.get("theta3", 60.00))
 
         dsi = float(model.predict(features)[0])
 
-        if dsi < theta1:
+        if dsi <= theta1:
             risk_level = "Low"
-        elif dsi < theta2:
-            risk_level = "Medium"
-        else:
+            risk_code  = 0
+        elif dsi <= theta2:
+            risk_level = "Moderate"
+            risk_code  = 1
+        elif dsi <= theta3:
             risk_level = "High"
+            risk_code  = 2
+        else:
+            risk_level = "Very High"
+            risk_code  = 3
 
         result = {
             "dsi": dsi,
-            "risk_level": risk_level
+            "risk_level": risk_level,
+            "risk_code": risk_code
         }
 
         print(json.dumps(result))

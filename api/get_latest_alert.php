@@ -9,7 +9,7 @@ $lastId = isset($_GET['last_id']) ? (int)$_GET['last_id'] : 0;
 
 $sql = "SELECT id, created_at, temperature, humidity, dsi 
         FROM sensor_data 
-        WHERE risk_level = 'High' AND id > ? 
+        WHERE (risk_level = 'High' OR risk_level = 'Very High') AND id > ? 
         ORDER BY id DESC LIMIT 1";
 
 $stmt = $conn->prepare($sql);

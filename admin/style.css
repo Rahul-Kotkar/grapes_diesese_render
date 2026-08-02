@@ -970,10 +970,11 @@ button, input, select, textarea {
     transition: width 0.6s ease;
 }
 
-.risk-fill-low    { background: linear-gradient(90deg, #10b981, #34d399); }
-.risk-fill-medium { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.risk-fill-high   { background: linear-gradient(90deg, #ef4444, #f87171); }
-.risk-fill-na     { background-color: #9ca3af; }
+.risk-fill-low      { background: linear-gradient(90deg, #10b981, #34d399); }
+.risk-fill-medium   { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.risk-fill-high     { background: linear-gradient(90deg, #ef4444, #f87171); }
+.risk-fill-veryhigh { background: linear-gradient(90deg, #dc2626, #991b1b); }
+.risk-fill-na       { background-color: #9ca3af; }
 
 /* ── Status Badges ─────────────────────────────────────────────────────── */
 .badge {

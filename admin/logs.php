@@ -103,11 +103,14 @@ function pageUrl2(int $p, int $uid, string $q, string $by): string {
 }
 
 function riskClass(string $risk): string {
-    return match(strtolower($risk)) {
-        'low'    => 'risk-fill-low',
-        'medium' => 'risk-fill-medium',
-        'high'   => 'risk-fill-high',
-        default  => 'risk-fill-na',
+    $r = strtolower(trim($risk));
+    return match(true) {
+        str_contains($r, 'low')       => 'risk-fill-low',
+        str_contains($r, 'moderate')  => 'risk-fill-medium',
+        str_contains($r, 'medium')    => 'risk-fill-medium',
+        str_contains($r, 'very high') => 'risk-fill-veryhigh',
+        str_contains($r, 'high')      => 'risk-fill-high',
+        default                       => 'risk-fill-na',
     };
 }
 ?>

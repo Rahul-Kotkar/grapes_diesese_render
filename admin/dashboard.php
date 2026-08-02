@@ -182,12 +182,13 @@ $count      = count($rows);
                         <p style="font-size:13px;color:var(--text-muted);">No recent records.</p>
                         <?php else: ?>
                             <?php foreach ($recentFeed as $feed): 
-                                $risk = strtolower($feed['risk_level'] ?? 'low');
-                                $badgeClass = match($risk) {
-                                    'low' => 'badge-active',
-                                    'medium' => 'trend-badge trend-neutral',
-                                    'high' => 'trend-badge trend-down',
-                                    default => 'badge-inactive'
+                                $risk = strtolower(trim($feed['risk_level'] ?? 'low'));
+                                $badgeClass = match(true) {
+                                    str_contains($risk, 'low')       => 'badge-active',
+                                    str_contains($risk, 'moderate')  => 'trend-badge trend-neutral',
+                                    str_contains($risk, 'medium')    => 'trend-badge trend-neutral',
+                                    str_contains($risk, 'high')      => 'trend-badge trend-down',
+                                    default                          => 'badge-inactive'
                                 };
                             ?>
                             <div class="activity-item">
