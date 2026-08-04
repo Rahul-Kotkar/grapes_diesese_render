@@ -113,6 +113,21 @@ function riskClass(string $risk): string {
         default                       => 'risk-fill-na',
     };
 }
+
+function formatRiskDisplayLabel(string $risk): string {
+    $r = trim($risk);
+    $rLower = strtolower($r);
+    if (str_contains($rLower, 'very high')) {
+        return 'Very High Risk (Alert)';
+    }
+    if (str_contains($rLower, 'high') && !str_contains($rLower, 'very')) {
+        return 'High Risk';
+    }
+    if ($r !== '' && !str_contains($rLower, 'risk') && $r !== 'N/A') {
+        return $r . ' Risk';
+    }
+    return $r;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -220,6 +235,7 @@ function riskClass(string $risk): string {
                             <?php foreach ($rows as $r): 
                                 $dsiScaled = $r['dsi'] !== null ? sprintf("%.6f", (float)$r['dsi'] / 100) : null;
                                 $riskLevel = $r['risk_level'] ?? 'N/A';
+                                $displayRisk = formatRiskDisplayLabel($riskLevel);
                                 $fillClass = riskClass($riskLevel);
                                 $percentage = $r['dsi'] !== null ? min(100, max(0, (float)$r['dsi'])) : 0;
                             ?>
@@ -257,9 +273,9 @@ function riskClass(string $risk): string {
                                 </td>
                                 <td>
                                     <?php if ($dsiScaled !== null): ?>
-                                    <div class="risk-progress-wrap" title="DSI: <?= htmlspecialchars($dsiScaled) ?> | Risk: <?= htmlspecialchars($riskLevel) ?>">
+                                    <div class="risk-progress-wrap" title="DSI: <?= htmlspecialchars($dsiScaled) ?> | Risk: <?= htmlspecialchars($displayRisk) ?>">
                                         <div class="risk-progress-header">
-                                            <span style="font-weight:700;color:var(--text-main);"><?= htmlspecialchars($riskLevel) ?> Risk</span>
+                                            <span style="font-weight:700;color:var(--text-main);"><?= htmlspecialchars($displayRisk) ?></span>
                                             <span style="color:var(--text-muted);font-weight:600;"><?= htmlspecialchars($dsiScaled) ?></span>
                                         </div>
                                         <div class="risk-bar-container">

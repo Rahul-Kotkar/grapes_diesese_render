@@ -140,30 +140,32 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
     $farmName  = $targetUser['username'] ?? "Farm User #$userId";
     $rawDsi    = sprintf("%.6f", (float)($sensorData['dsi'] ?? 0) / 100);
     $riskLevel = trim($sensorData['risk_level'] ?? 'High');
-    $isVeryHigh = (strtolower($riskLevel) === 'very high' || strtolower($riskLevel) === 'very high (action required)');
+    $isVeryHigh = (strtolower($riskLevel) === 'very high' || strtolower($riskLevel) === 'very high (action required)' || str_contains(strtolower($riskLevel), 'very high'));
 
     if ($isVeryHigh) {
-        $subject     = "🚨 CRITICAL ALERT: Very High Disease Risk for " . $farmName . " (DSI: " . $rawDsi . ")";
-        $headerTitle = "🚨 CRITICAL: Very High Disease Risk Alert";
+        $subject     = "🚨 CRITICAL ALERT: Very High Risk Alert for " . $farmName . " (DSI: " . $rawDsi . ")";
+        $headerTitle = "🚨 CRITICAL: Very High Risk Alert";
         $headerBg    = "linear-gradient(135deg, #dc2626, #991b1b)";
-        $alertDesc   = "CRITICAL fungal disease risk detected (Action Required)! Immediate intervention recommended:";
-        $badgeMarkup = '<span class="badge-high" style="background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;font-weight:700;">🚨 ' . htmlspecialchars($riskLevel) . ' (Action Required)</span>';
+        $alertDesc   = "CRITICAL fungal disease risk detected (Very High Risk Alert)! Immediate intervention recommended:";
+        $badgeMarkup = '<span class="badge-high" style="background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;font-weight:700;">🚨 Very High Risk (Alert)</span>';
+        $displayRiskLevel = "Very High Risk (Alert)";
     } else {
         $subject     = "⚠️ High Risk Disease Alert for " . $farmName . " (DSI: " . $rawDsi . ")";
         $headerTitle = "⚠️ High Disease Risk Alert";
         $headerBg    = "linear-gradient(135deg, #ef4444, #dc2626)";
         $alertDesc   = "High fungal disease risk detected based on real-time IoT sensor telemetry:";
-        $badgeMarkup = '<span class="badge-high">⚠️ ' . htmlspecialchars($riskLevel) . ' (Alert)</span>';
+        $badgeMarkup = '<span class="badge-high">⚠️ High Risk (Alert)</span>';
+        $displayRiskLevel = "High Risk (Alert)";
     }
     
     $plainMessage = "SmartAgri Disease Risk Alert\n\n";
-    $plainMessage .= ($isVeryHigh ? "CRITICAL (Action Required)" : "High") . " grape disease risk detected for farm account: " . $farmName . "\n\n";
+    $plainMessage .= ($isVeryHigh ? "CRITICAL Very High Risk Alert" : "High Disease Risk Alert") . " detected for farm account: " . $farmName . "\n\n";
     $plainMessage .= "Telemetry Details:\n";
     $plainMessage .= "- Temperature: " . $sensorData['temperature'] . " °C\n";
     $plainMessage .= "- Humidity: " . $sensorData['humidity'] . " %\n";
     $plainMessage .= "- Leaf Wetness: " . $sensorData['leaf_wetness'] . "\n";
     $plainMessage .= "- Disease Severity Index (DSI): " . $rawDsi . "\n";
-    $plainMessage .= "- Risk Level: " . htmlspecialchars($riskLevel) . "\n\n";
+    $plainMessage .= "- Risk Level: " . htmlspecialchars($displayRiskLevel) . "\n\n";
     $plainMessage .= "Please log into your farm dashboard immediately for recommendations.\n";
 
     // Clean HTML email template to prevent email providers from marking as SPAM
