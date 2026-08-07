@@ -3,18 +3,12 @@ FROM php:8.2-apache
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Install system dependencies, MySQL extensions, and Python 3 ML runtime
+# Install system dependencies and MySQL extensions
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
     git \
     unzip \
     python3 \
-    python3-pip \
-    python3-numpy \
-    python3-scipy \
-    python3-joblib \
-    python3-sklearn \
-    && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql \
+    && docker-php-ext-install mysqli pdo pdo_mysql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -39,6 +33,16 @@ RUN echo '<Directory /var/www/html/>\n\
     Require all granted\n\
 </Directory>' > /etc/apache2/conf-available/override.conf \
     && a2enconf override
+
+# Tune Apache MPM prefork for low memory (512MB RAM free plan)
+RUN echo '<IfModule mpm_prefork_module>\n\
+    StartServers             2\n\
+    MinSpareServers          1\n\
+    MaxSpareServers          3\n\
+    MaxRequestWorkers       10\n\
+    MaxConnectionsPerChild 100\n\
+</IfModule>' > /etc/apache2/conf-available/mpm_tuning.conf \
+    && a2enconf mpm_tuning
 
 # Expose port 80
 EXPOSE 80

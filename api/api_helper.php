@@ -26,7 +26,44 @@ if (file_exists($autoloadPath)) {
  */
 function callMLApi(float $temp, float $rh, float $sunlight, float $rainfall, float $leafw, int $timeout = 20): array
 {
-    // ── STEP 1: Try Local Python Inference (Instant 10ms execution, zero sleeping API) ──
+    // ── STEP 1: Direct Native PHP Inference (Instant 0ms, 0 RAM overhead, prevents 512MB RAM OOM) ──
+    try {
+        // Ridge model weights order: ['Leafwetness', 'Rain-level', 'RH', 'Temp', 'Sunlight']
+        $dsi = (3.9206532 * $leafw)
+             + (0.17876778 * $rainfall)
+             + (0.35411681 * $rh)
+             + (-1.55485825 * $temp)
+             + (-0.32453377 * $sunlight)
+             + 47.419286313061704;
+
+        $theta1 = 25.84;
+        $theta2 = 31.93;
+        $theta3 = 60.00;
+
+        if ($dsi <= $theta1) {
+            $riskLevel = "Low";
+            $riskCode  = 0;
+        } elseif ($dsi <= $theta2) {
+            $riskLevel = "Moderate";
+            $riskCode  = 1;
+        } elseif ($dsi <= $theta3) {
+            $riskLevel = "High";
+            $riskCode  = 2;
+        } else {
+            $riskLevel = "Very High";
+            $riskCode  = 3;
+        }
+
+        return [
+            'dsi'        => (float)$dsi,
+            'risk_level' => $riskLevel,
+            'risk_code'  => $riskCode
+        ];
+    } catch (\Throwable $e) {
+        error_log('[ML Local PHP Inference Error]: ' . $e->getMessage());
+    }
+
+    // ── STEP 2: Fallback to Local Python Inference if PHP calculation ever fails ──
     $predictScript = dirname(__DIR__) . '/model/predict.py';
     if (file_exists($predictScript)) {
         // Escaped CLI arguments: temp, rh, sunlight, rainfall, leafw
@@ -49,7 +86,7 @@ function callMLApi(float $temp, float $rh, float $sunlight, float $rainfall, flo
         }
     }
 
-    // ── STEP 2: Fallback to Remote HTTP ML API ──────────────────────────────────────────
+    // ── STEP 3: Fallback to Remote HTTP ML API ──────────────────────────────────────────
     $payload = json_encode([
         'Leafwetness' => $leafw,
         'Rain-level'  => $rainfall,
@@ -131,6 +168,9 @@ function sendHighRiskNotification(int $userId, array $sensorData): void
         $recipients[] = ["email" => $defaultAdminEmail, "name" => "System Administrator"];
         $addedEmails[] = strtolower($defaultAdminEmail);
     }
+
+    // Close DB connection as soon as recipient query completes to prevent connection leaks
+    $conn->close();
 
     // If no recipients, abort
     if (empty($recipients)) {

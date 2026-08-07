@@ -19,11 +19,11 @@
     RewriteRule ^(.+)$ $1.php [L,QSA]
 </IfModule>
 
-# ── Security — block direct access to config.php ──────────────────────────────
-<Files "config.php">
+# ── Security — block direct access to config.php & helper/test scripts ────────
+<FilesMatch "^(config|api_helper|test_email|test_risk_email|mockdata)\.php$">
     Order Allow,Deny
     Deny from all
-</Files>
+</FilesMatch>
 
 # ── Security — disable directory listing ──────────────────────────────────────
 Options -Indexes

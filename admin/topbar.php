@@ -38,6 +38,7 @@
                     $notifications[] = $n;
                 }
             }
+            $topbarConn->close();
             $hasNotifs = count($notifications) > 0;
             ?>
             <?php if($hasNotifs): ?>
@@ -187,6 +188,7 @@ document.addEventListener('click', function(event) {
                         window.focus();
                         this.close();
                     };
+                    setTimeout(() => n.close(), 8000);
                     
                     // Also refresh the page if we are on dashboard to show new data
                     if (window.location.pathname.includes('dashboard.php')) {

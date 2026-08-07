@@ -80,18 +80,6 @@ $sql = "SELECT id, created_at, user_id, temperature, humidity, sunlight, rainfal
         ORDER BY created_at DESC";
 
 $stmt = $conn->prepare($sql);
-if ($stmt) {
-    if ($types) {
-        $stmt->bind_param($types, ...$params);
-    }
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $rows = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-} else {
-    $rows = [];
-}
-$conn->close();
 
 // Prepare CSV Output
 $filename = "sensor_telemetry_" . $range . "_" . date('Y-m-d_H-i') . ".csv";
@@ -121,24 +109,34 @@ fputcsv($output, [
     'Risk Level'
 ]);
 
-// Write Rows
-foreach ($rows as $r) {
-    $formattedTime = !empty($r['created_at']) ? date('d-m-Y H:i:s', strtotime($r['created_at'])) : 'N/A';
-    $dsiVal = $r['dsi'] !== null ? sprintf("%.6f", (float)$r['dsi'] / 100) : 'N/A';
+if ($stmt) {
+    if ($types) {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    fputcsv($output, [
-        $r['id'],
-        $formattedTime,
-        $r['user_id'] ?? '1',
-        $r['temperature'],
-        $r['humidity'],
-        $r['sunlight'],
-        $r['rainfall'],
-        $r['leaf_wetness'],
-        $dsiVal,
-        $r['risk_level'] ?? 'N/A'
-    ]);
+    // Stream row by row to prevent memory spikes
+    while ($r = $result->fetch_assoc()) {
+        $formattedTime = !empty($r['created_at']) ? date('d-m-Y H:i:s', strtotime($r['created_at'])) : 'N/A';
+        $dsiVal = $r['dsi'] !== null ? sprintf("%.6f", (float)$r['dsi'] / 100) : 'N/A';
+
+        fputcsv($output, [
+            $r['id'],
+            $formattedTime,
+            $r['user_id'] ?? '1',
+            $r['temperature'],
+            $r['humidity'],
+            $r['sunlight'],
+            $r['rainfall'],
+            $r['leaf_wetness'],
+            $dsiVal,
+            $r['risk_level'] ?? 'N/A'
+        ]);
+    }
+    $stmt->close();
 }
+$conn->close();
 
 fclose($output);
 exit();

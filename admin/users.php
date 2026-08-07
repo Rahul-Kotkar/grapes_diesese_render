@@ -35,6 +35,7 @@ if ($types && $countStmt) {
 }
 $countStmt && $countStmt->execute();
 $totalRecords = (int)($countStmt ? $countStmt->get_result()->fetch_row()[0] : 0);
+if ($countStmt) $countStmt->close();
 $totalPages   = max(1, (int)ceil($totalRecords / $perPage));
 $currentPage  = min($currentPage, $totalPages);
 $offset       = ($currentPage - 1) * $perPage;
